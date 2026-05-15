@@ -11,7 +11,8 @@
     "lint": "eslint src --max-warnings 999",
     "lint:fix": "eslint src --fix --max-warnings 999",
     "format": "prettier --write \"src/**/*.{ts,tsx}\" \"tests/**/*.ts\" \"build/**/*.ts\"",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx}\" \"tests/**/*.ts\" \"build/**/*.ts\""
+    "format:check": "prettier --check \"src/**/*.{ts,tsx}\" \"tests/**/*.ts\" \"build/**/*.ts\"",
+    "mcp": "tsx --tsconfig mcp/tsconfig.json mcp/src/server.ts"
   },
   "dependencies": {
     "iztro": "^2.5.8",
@@ -22,6 +23,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@types/node": "^24.6.0",
     "@types/react": "^19.1.12",
     "@types/react-dom": "^19.1.9",
@@ -35,6 +37,7 @@
     "tsx": "^4.21.0",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.59.3",
-    "vite": "^7.1.7"
+    "vite": "^7.1.7",
+    "zod": "^4.4.3"
   }
 }

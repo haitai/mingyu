@@ -114,6 +114,17 @@ export function ResultPage() {
     primaryHasUnknownTime,
     partnerHasUnknownTime,
   );
+  const updatePromptState = useCallback(
+    (next: Partial<QueryPromptState>) => {
+      const merged = {
+        ...promptState,
+        ...next,
+      };
+
+      setSearchParams(buildResultSearch(inputState, merged), { replace: true });
+    },
+    [inputState, promptState, setSearchParams],
+  );
   const {
     activeBaziShortcutMode,
     activeZiweiShortcutMode,
@@ -424,16 +435,6 @@ export function ResultPage() {
     viewportWidth,
     hasNavigatorShare: typeof navigator !== 'undefined' && typeof navigator.share === 'function',
   });
-  const updatePromptState = useCallback(
-    (next: Partial<QueryPromptState>) => {
-      const merged = {
-        ...promptState,
-        ...next,
-      };
-      setSearchParams(buildResultSearch(inputState, merged), { replace: true });
-    },
-    [inputState, promptState, setSearchParams],
-  );
 
   function switchTab(tab: ResultTabKey) {
     updatePromptState({ tab });
