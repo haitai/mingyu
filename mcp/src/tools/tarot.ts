@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { drawSingleCard, drawSpreadCards, getCardKeywords } from '../../../src/utils/tarot.js';
+import { resultOutputSchema } from '../schemas.js';
+import { createErrorToolResult, createResultToolResult, getErrorMessage } from '../tool-results.js';
 
 const tarotSchema = z.object({
   spreadType: z
@@ -10,10 +12,13 @@ const tarotSchema = z.object({
 });
 
 export function registerTarotTool(server: McpServer) {
-  server.tool(
+  server.registerTool(
     'divine_tarot',
-    '塔罗牌抽牌：从 78 张塔罗牌中洗牌抽牌，支持单牌指引和多种牌阵，含正逆位与关键词',
-    tarotSchema.shape,
+    {
+      description: '塔罗牌抽牌：从 78 张塔罗牌中洗牌抽牌，支持单牌指引和多种牌阵，含正逆位与关键词',
+      inputSchema: tarotSchema.shape,
+      outputSchema: resultOutputSchema,
+    },
     async (args) => {
       try {
         const spreadType = args.spreadType || 'single';
@@ -49,20 +54,9 @@ export function registerTarotTool(server: McpServer) {
             timestamp: draw.timestamp,
           };
         }
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-        };
+        return createResultToolResult(result);
       } catch (error) {
-        const message = error instanceof Error ? error.message : '抽牌失败';
-        return {
-          content: [{ type: 'text', text: JSON.stringify({ error: message }) }],
-          isError: true,
-        };
+        return createErrorToolResult(getErrorMessage(error, '抽牌失败'));
       }
     },
   );

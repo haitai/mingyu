@@ -4,6 +4,9 @@ import {
   buildZiweiChartInput,
   calculateFullZiweiChart,
 } from '../../../src/lib/full-chart-engine/ziwei.js';
+import type { ZiweiRuntime } from '../../../src/lib/full-chart-engine/ziwei.js';
+import { ziweiOutputSchema } from '../schemas.js';
+import { createErrorToolResult, createStructuredToolResult, getErrorMessage } from '../tool-results.js';
 
 const ziweiSchema = z.object({
   name: z.string().optional().describe('姓名（可选）'),
@@ -16,11 +19,22 @@ const ziweiSchema = z.object({
   isLeapMonth: z.boolean().optional().describe('是否为闰月（仅农历有效）'),
 });
 
+export function buildSerializableZiweiResult(result: ZiweiRuntime) {
+  return {
+    basicInfo: result.payloadByScope.origin.basic_info,
+    scopeNames: Object.keys(result.payloadByScope),
+    payloadByScope: result.payloadByScope,
+  };
+}
+
 export function registerZiweiTool(server: McpServer) {
-  server.tool(
+  server.registerTool(
     'ziwei_calculate',
-    '紫微斗数排盘：根据出生信息计算完整紫微命盘，包含星曜、宫位、大限、流年等数据',
-    ziweiSchema.shape,
+    {
+      description: '紫微斗数排盘：根据出生信息计算完整紫微命盘，包含星曜、宫位、大限、流年等数据',
+      inputSchema: ziweiSchema.shape,
+      outputSchema: ziweiOutputSchema,
+    },
     async (args) => {
       try {
         const input = buildZiweiChartInput({
@@ -36,28 +50,9 @@ export function registerZiweiTool(server: McpServer) {
         });
 
         const result = await calculateFullZiweiChart(input);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(
-                {
-                  astrolabe: result.astrolabe,
-                  horoscope: result.horoscope,
-                  payloadByScope: result.payloadByScope,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
+        return createStructuredToolResult(buildSerializableZiweiResult(result));
       } catch (error) {
-        const message = error instanceof Error ? error.message : '排盘失败';
-        return {
-          content: [{ type: 'text', text: JSON.stringify({ error: message }) }],
-          isError: true,
-        };
+        return createErrorToolResult(getErrorMessage(error, '排盘失败'));
       }
     },
   );

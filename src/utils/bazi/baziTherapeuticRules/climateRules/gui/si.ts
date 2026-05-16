@@ -1,4 +1,4 @@
-import type { ClimateRule } from '../types';
+import type { ClimateRule } from '../../types';
 
 export const GUI_SI_CLIMATE_RULES: ClimateRule[] = [
   {

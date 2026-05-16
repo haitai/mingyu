@@ -7,6 +7,8 @@ import type {
   SupplementaryInfo,
 } from '../../../src/types/divination.js';
 import type { DivinationMethodId } from '../../../src/lib/divination/config.js';
+import { promptOutputSchema } from '../schemas.js';
+import { createErrorToolResult, createStructuredToolResult, getErrorMessage } from '../tool-results.js';
 
 const promptSchema = z.object({
   method: z
@@ -22,10 +24,13 @@ const promptSchema = z.object({
 });
 
 export function registerPromptTool(server: McpServer) {
-  server.tool(
+  server.registerTool(
     'build_divination_prompt',
-    '基于排盘结果生成结构化 AI 提示词，可直接用于请求 AI 解读',
-    promptSchema.shape,
+    {
+      description: '基于排盘结果生成结构化 AI 提示词，可直接用于请求 AI 解读',
+      inputSchema: promptSchema.shape,
+      outputSchema: promptOutputSchema,
+    },
     async (args) => {
       try {
         const data = JSON.parse(args.data) as DivinationData;
@@ -42,20 +47,9 @@ export function registerPromptTool(server: McpServer) {
           template,
         );
 
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify({ prompt }, null, 2),
-            },
-          ],
-        };
+        return createStructuredToolResult({ prompt });
       } catch (error) {
-        const message = error instanceof Error ? error.message : '生成提示词失败';
-        return {
-          content: [{ type: 'text', text: JSON.stringify({ error: message }) }],
-          isError: true,
-        };
+        return createErrorToolResult(getErrorMessage(error, '生成提示词失败'));
       }
     },
   );

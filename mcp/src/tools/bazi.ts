@@ -2,6 +2,8 @@ import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { baziCalculator } from '../../../src/utils/bazi/baziCalculator.js';
 import type { Person } from '../../../src/utils/bazi/baziTypes.js';
+import { resultOutputSchema } from '../schemas.js';
+import { createErrorToolResult, createResultToolResult, getErrorMessage } from '../tool-results.js';
 
 const baziSchema = z.object({
   gender: z.enum(['male', 'female']).describe('性别：male 为男，female 为女'),
@@ -14,33 +16,30 @@ const baziSchema = z.object({
 });
 
 export function registerBaziTool(server: McpServer) {
-  server.tool('bazi_calculate', '八字排盘：根据出生信息计算四柱八字、十神、藏干、大运、神煞等完整命盘数据', baziSchema.shape, async (args) => {
-    const person: Person = {
-      gender: args.gender,
-      year: args.year,
-      month: args.month,
-      day: args.day,
-      timeIndex: args.timeIndex,
-      isLunar: args.dateType === 'lunar',
-      isLeapMonth: args.isLeapMonth ?? false,
-    };
+  server.registerTool(
+    'bazi_calculate',
+    {
+      description: '八字排盘：根据出生信息计算四柱八字、十神、藏干、大运、神煞等完整命盘数据',
+      inputSchema: baziSchema.shape,
+      outputSchema: resultOutputSchema,
+    },
+    async (args) => {
+      const person: Person = {
+        gender: args.gender,
+        year: args.year,
+        month: args.month,
+        day: args.day,
+        timeIndex: args.timeIndex,
+        isLunar: args.dateType === 'lunar',
+        isLeapMonth: args.isLeapMonth ?? false,
+      };
 
-    try {
-      const result = baziCalculator.calculateBazi(person);
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-      };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : '排盘失败';
-      return {
-        content: [{ type: 'text', text: JSON.stringify({ error: message }) }],
-        isError: true,
-      };
-    }
-  });
+      try {
+        const result = baziCalculator.calculateBazi(person);
+        return createResultToolResult(result);
+      } catch (error) {
+        return createErrorToolResult(getErrorMessage(error, '排盘失败'));
+      }
+    },
+  );
 }

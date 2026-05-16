@@ -18,13 +18,21 @@
 
 ## 快速开始
 
-### 1. 确保项目依赖已安装
+### 1. 安装项目
 
 ```bash
+git clone https://github.com/Brhiza/mingyu.git
+cd mingyu
 npm install
 ```
 
-### 2. 在 Claude Desktop 中配置
+### 2. 本地启动测试
+
+```bash
+npm run mcp
+```
+
+### 3. 在 Claude Desktop 中配置
 
 打开 Claude Desktop 设置 -> Developer -> Edit Config，编辑 `claude_desktop_config.json`：
 
@@ -42,7 +50,7 @@ npm install
 
 > 请将 `cwd` 替换为你本地项目的实际路径。
 
-### 3. 重启 Claude Desktop
+### 4. 重启 Claude Desktop
 
 配置完成后重启 Claude Desktop，在对话中即可看到命语的工具图标。你可以直接让 Claude 调用排盘工具。
 

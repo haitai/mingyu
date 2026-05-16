@@ -2,6 +2,8 @@ import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { generateMeihua } from '../../../src/lib/divination/algorithms/meihua/index.js';
 import type { MeihuaSettings } from '../../../src/types/divination.js';
+import { resultOutputSchema } from '../schemas.js';
+import { createErrorToolResult, createResultToolResult, getErrorMessage } from '../tool-results.js';
 
 const meihuaSchema = z.object({
   method: z
@@ -13,10 +15,13 @@ const meihuaSchema = z.object({
 });
 
 export function registerMeihuaTool(server: McpServer) {
-  server.tool(
+  server.registerTool(
     'divine_meihua',
-    '梅花易数起卦：支持时间起卦、数字起卦、随机起卦，生成主卦、互卦、变卦及体用生克分析',
-    meihuaSchema.shape,
+    {
+      description: '梅花易数起卦：支持时间起卦、数字起卦、随机起卦，生成主卦、互卦、变卦及体用生克分析',
+      inputSchema: meihuaSchema.shape,
+      outputSchema: resultOutputSchema,
+    },
     async (args) => {
       try {
         const customDate = args.customDate ? new Date(args.customDate) : undefined;
@@ -25,20 +30,9 @@ export function registerMeihuaTool(server: McpServer) {
           ...(args.number ? { number: args.number } : {}),
         };
         const result = generateMeihua(customDate, settings);
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-        };
+        return createResultToolResult(result);
       } catch (error) {
-        const message = error instanceof Error ? error.message : '起卦失败';
-        return {
-          content: [{ type: 'text', text: JSON.stringify({ error: message }) }],
-          isError: true,
-        };
+        return createErrorToolResult(getErrorMessage(error, '起卦失败'));
       }
     },
   );

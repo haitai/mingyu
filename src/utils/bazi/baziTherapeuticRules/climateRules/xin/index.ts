@@ -1,4 +1,4 @@
-import type { ClimateRule } from '../types';
+import type { ClimateRule } from '../../types';
 import { XIN_CHEN_CLIMATE_RULES } from './chen';
 import { XIN_SI_CLIMATE_RULES } from './si';
 import { XIN_WU_CLIMATE_RULES } from './wu';
