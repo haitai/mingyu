@@ -1,9 +1,6 @@
 import { baziCalculator } from '../../utils/bazi/baziCalculator';
 import type { Person } from '../../utils/bazi/baziTypes';
-import {
-  buildZiweiChartInput,
-  calculateFullZiweiChart,
-} from '../full-chart-engine/ziwei';
+import { buildZiweiChartInput, calculateFullZiweiChart } from '../full-chart-engine/ziwei';
 import { generateLiuyao } from '../divination/algorithms/liuyao';
 import { generateMeihua } from '../divination/algorithms/meihua';
 import { generateQimen } from '../divination/algorithms/qimen';
@@ -104,7 +101,8 @@ export function getPublicApiOpenApiDocument() {
     info: {
       title: 'AOV 命理与占卜公开 API',
       version: API_VERSION,
-      description: '提供八字、紫微斗数、六爻、梅花易数、奇门遁甲、大六壬、塔罗、三山国王灵签和提示词生成能力。',
+      description:
+        '提供八字、紫微斗数、六爻、梅花易数、奇门遁甲、大六壬、塔罗、三山国王灵签和提示词生成能力。',
     },
     servers: [{ url: `${BASE_URL}/api/${API_VERSION}` }],
     paths: {
@@ -129,27 +127,54 @@ export function getPublicApiOpenApiDocument() {
       '/bazi/calculate': {
         post: {
           summary: '八字排盘',
-          requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/BaziRequest' } } } },
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/BaziRequest' } },
+            },
+          },
           responses: { '200': { description: '八字命盘数据' } },
         },
       },
       '/ziwei/calculate': {
         post: {
           summary: '紫微斗数排盘',
-          requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/ZiweiRequest' } } } },
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ZiweiRequest' } },
+            },
+          },
           responses: { '200': { description: '紫微命盘数据' } },
         },
       },
-      '/divination/liuyao': { post: { summary: '六爻起卦', responses: { '200': { description: '六爻卦盘' } } } },
-      '/divination/meihua': { post: { summary: '梅花易数起卦', responses: { '200': { description: '梅花易数卦盘' } } } },
-      '/divination/qimen': { post: { summary: '奇门遁甲排盘', responses: { '200': { description: '奇门盘' } } } },
-      '/divination/liuren': { post: { summary: '大六壬排盘', responses: { '200': { description: '大六壬课盘' } } } },
-      '/divination/tarot': { post: { summary: '塔罗抽牌', responses: { '200': { description: '塔罗牌阵' } } } },
-      '/divination/ssgw': { post: { summary: '三山国王灵签求签', responses: { '200': { description: '灵签结果' } } } },
+      '/divination/liuyao': {
+        post: { summary: '六爻起卦', responses: { '200': { description: '六爻卦盘' } } },
+      },
+      '/divination/meihua': {
+        post: { summary: '梅花易数起卦', responses: { '200': { description: '梅花易数卦盘' } } },
+      },
+      '/divination/qimen': {
+        post: { summary: '奇门遁甲排盘', responses: { '200': { description: '奇门盘' } } },
+      },
+      '/divination/liuren': {
+        post: { summary: '大六壬排盘', responses: { '200': { description: '大六壬课盘' } } },
+      },
+      '/divination/tarot': {
+        post: { summary: '塔罗抽牌', responses: { '200': { description: '塔罗牌阵' } } },
+      },
+      '/divination/ssgw': {
+        post: { summary: '三山国王灵签求签', responses: { '200': { description: '灵签结果' } } },
+      },
       '/divination/prompt': {
         post: {
           summary: '基于排盘结果生成 AI 解读提示词',
-          requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/PromptRequest' } } } },
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/PromptRequest' } },
+            },
+          },
           responses: { '200': { description: '结构化提示词' } },
         },
       },
@@ -331,7 +356,12 @@ function calculateLiuren(input: JsonRecord) {
 }
 
 function calculateTarot(input: JsonRecord) {
-  const spreadType = readEnum(input, 'spreadType', ['single', 'three', 'love', 'career', 'decision'], 'single');
+  const spreadType = readEnum(
+    input,
+    'spreadType',
+    ['single', 'three', 'love', 'career', 'decision'],
+    'single',
+  );
   if (spreadType === 'single') {
     const result = drawSingleCard();
     return {
@@ -366,7 +396,14 @@ function calculateTarot(input: JsonRecord) {
 }
 
 function buildPrompt(input: JsonRecord) {
-  const method = readEnum(input, 'method', ['liuyao', 'meihua', 'qimen', 'liuren', 'tarot', 'ssgw']);
+  const method = readEnum(input, 'method', [
+    'liuyao',
+    'meihua',
+    'qimen',
+    'liuren',
+    'tarot',
+    'ssgw',
+  ]);
   const data = readRecord(input, 'data') as unknown as DivinationData;
   const supplementaryInfo = isRecord(input.supplementaryInfo)
     ? (input.supplementaryInfo as SupplementaryInfo)
