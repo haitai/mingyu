@@ -1,6 +1,8 @@
 import { type PersonRole } from '@/lib/input-labels';
 import type { QueryInputState } from '@/lib/query-state';
 
+export type { PersonRole };
+
 export const SELF_FIELD_MAP = {
   name: 'name',
   gender: 'gender',

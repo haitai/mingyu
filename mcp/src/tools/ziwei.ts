@@ -4,7 +4,14 @@ import {
   buildZiweiChartInput,
   calculateFullZiweiChart,
 } from '../../../src/lib/full-chart-engine/ziwei.js';
-import type { ZiweiRuntime } from '../../../src/lib/full-chart-engine/ziwei.js';
+import {
+  ZIWEI_PROMPT_SCOPES,
+  ZIWEI_PROMPT_TOPICS,
+  buildSerializableZiweiResult,
+  buildZiweiPromptForRuntime,
+  type ZiweiPromptScope,
+  type ZiweiPromptTopic,
+} from '../../../src/lib/public-api/prompt-builders.js';
 import { ziweiOutputSchema } from '../schemas.js';
 import { createErrorToolResult, createStructuredToolResult, getErrorMessage } from '../tool-results.js';
 
@@ -19,13 +26,17 @@ const ziweiSchema = z.object({
   isLeapMonth: z.boolean().optional().describe('是否为闰月（仅农历有效）'),
 });
 
-export function buildSerializableZiweiResult(result: ZiweiRuntime) {
-  return {
-    basicInfo: result.payloadByScope.origin.basic_info,
-    scopeNames: Object.keys(result.payloadByScope),
-    payloadByScope: result.payloadByScope,
-  };
-}
+const ziweiPromptSchema = ziweiSchema.extend({
+  question: z.string().describe('用户希望围绕命盘解读的问题'),
+  promptTopic: z
+    .enum(ZIWEI_PROMPT_TOPICS)
+    .optional()
+    .describe('提示词主题：destiny=命局, relationship=感情, career-wealth=事业财运, life=人生, chat=自由问答'),
+  promptScope: z
+    .enum(ZIWEI_PROMPT_SCOPES)
+    .optional()
+    .describe('提示词运限范围：origin=本命, decadal=大限, yearly=流年, monthly=流月, daily=流日, hourly=流时, age=年龄'),
+});
 
 export function registerZiweiTool(server: McpServer) {
   server.registerTool(
@@ -53,6 +64,46 @@ export function registerZiweiTool(server: McpServer) {
         return createStructuredToolResult(buildSerializableZiweiResult(result));
       } catch (error) {
         return createErrorToolResult(getErrorMessage(error, '排盘失败'));
+      }
+    },
+  );
+
+  server.registerTool(
+    'ziwei_prompt',
+    {
+      description: '紫微斗数排盘并生成结构化 AI 解读提示词：一次调用返回命盘数据和可直接复制给 AI 的提示词',
+      inputSchema: ziweiPromptSchema.shape,
+      outputSchema: {
+        result: z.unknown().describe('紫微命盘数据'),
+        prompt: z.string().describe('可直接用于 AI 解读的结构化提示词'),
+      },
+    },
+    async (args) => {
+      try {
+        const input = buildZiweiChartInput({
+          name: args.name || '',
+          gender: args.gender,
+          dateType: args.dateType,
+          year: args.year,
+          month: args.month,
+          day: args.day,
+          timeIndex: args.timeIndex,
+          isLeapMonth: args.isLeapMonth ?? false,
+          useTrueSolarTime: false,
+        });
+
+        const result = await calculateFullZiweiChart(input);
+        return createStructuredToolResult({
+          result: buildSerializableZiweiResult(result),
+          prompt: buildZiweiPromptForRuntime({
+            result,
+            question: args.question,
+            topic: (args.promptTopic ?? 'chat') as ZiweiPromptTopic,
+            scope: (args.promptScope ?? 'origin') as ZiweiPromptScope,
+          }),
+        });
+      } catch (error) {
+        return createErrorToolResult(getErrorMessage(error, '生成紫微提示词失败'));
       }
     },
   );

@@ -1,5 +1,5 @@
 interface PromptShortcutPanelProps {
-  actions: Array<{ label: string }>;
+  actions: ReadonlyArray<{ label: string }>;
   activeMode: string;
   onApplyMode: (mode: string) => void;
   showCustomAndInspiration: boolean;

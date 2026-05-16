@@ -2,8 +2,18 @@ import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { baziCalculator } from '../../../src/utils/bazi/baziCalculator.js';
 import type { Person } from '../../../src/utils/bazi/baziTypes.js';
-import { resultOutputSchema } from '../schemas.js';
-import { createErrorToolResult, createResultToolResult, getErrorMessage } from '../tool-results.js';
+import {
+  BAZI_PROMPT_TOPICS,
+  buildBaziPromptForResult,
+  type BaziPromptTopic,
+} from '../../../src/lib/public-api/prompt-builders.js';
+import { promptOutputSchema, resultOutputSchema } from '../schemas.js';
+import {
+  createErrorToolResult,
+  createResultToolResult,
+  createStructuredToolResult,
+  getErrorMessage,
+} from '../tool-results.js';
 
 const baziSchema = z.object({
   gender: z.enum(['male', 'female']).describe('性别：male 为男，female 为女'),
@@ -13,6 +23,14 @@ const baziSchema = z.object({
   timeIndex: z.number().int().min(0).max(12).describe('时辰索引：0=早子时,1=丑时,...,12=晚子时'),
   dateType: z.enum(['solar', 'lunar']).describe('日期类型：solar 为阳历，lunar 为农历'),
   isLeapMonth: z.boolean().optional().describe('是否为闰月（仅农历有效）'),
+});
+
+const baziPromptSchema = baziSchema.extend({
+  question: z.string().describe('用户希望围绕命盘解读的问题'),
+  promptTopic: z
+    .enum(BAZI_PROMPT_TOPICS)
+    .optional()
+    .describe('提示词主题：general=综合, career=事业, wealth=财运, marriage=婚恋, children=子女, health=健康'),
 });
 
 export function registerBaziTool(server: McpServer) {
@@ -39,6 +57,40 @@ export function registerBaziTool(server: McpServer) {
         return createResultToolResult(result);
       } catch (error) {
         return createErrorToolResult(getErrorMessage(error, '排盘失败'));
+      }
+    },
+  );
+
+  server.registerTool(
+    'bazi_prompt',
+    {
+      description: '八字排盘并生成结构化 AI 解读提示词：一次调用返回命盘数据和可直接复制给 AI 的提示词',
+      inputSchema: baziPromptSchema.shape,
+      outputSchema: promptOutputSchema,
+    },
+    async (args) => {
+      const person: Person = {
+        gender: args.gender,
+        year: args.year,
+        month: args.month,
+        day: args.day,
+        timeIndex: args.timeIndex,
+        isLunar: args.dateType === 'lunar',
+        isLeapMonth: args.isLeapMonth ?? false,
+      };
+
+      try {
+        const result = baziCalculator.calculateBazi(person);
+        return createStructuredToolResult({
+          result,
+          prompt: buildBaziPromptForResult({
+            result,
+            question: args.question,
+            topic: (args.promptTopic ?? 'general') as BaziPromptTopic,
+          }),
+        });
+      } catch (error) {
+        return createErrorToolResult(getErrorMessage(error, '生成八字提示词失败'));
       }
     },
   );

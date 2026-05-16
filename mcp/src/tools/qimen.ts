@@ -1,11 +1,16 @@
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { generateQimen } from '../../../src/lib/divination/algorithms/qimen/index.js';
-import { resultOutputSchema } from '../schemas.js';
-import { createErrorToolResult, createResultToolResult, getErrorMessage } from '../tool-results.js';
+import { promptOutputSchema, resultOutputSchema } from '../schemas.js';
+import { createErrorToolResult, createStructuredToolResult, getErrorMessage } from '../tool-results.js';
+import { buildDivinationPromptText } from './prompt-helpers.js';
 
 const qimenSchema = z.object({
   customDate: z.string().optional().describe('自定义排盘时间（ISO 8601 格式），不提供则使用当前时间'),
+});
+
+const qimenPromptSchema = qimenSchema.extend({
+  question: z.string().describe('用户希望围绕奇门盘解读的问题'),
 });
 
 export function registerQimenTool(server: McpServer) {
@@ -21,9 +26,30 @@ export function registerQimenTool(server: McpServer) {
       try {
         const customDate = args.customDate ? new Date(args.customDate) : undefined;
         const result = generateQimen(customDate);
-        return createResultToolResult(result);
+        return createStructuredToolResult({ result });
       } catch (error) {
         return createErrorToolResult(getErrorMessage(error, '排盘失败'));
+      }
+    },
+  );
+
+  server.registerTool(
+    'qimen_prompt',
+    {
+      description: '奇门遁甲排盘并生成结构化 AI 解读提示词：一次调用返回奇门盘和可直接复制给 AI 的提示词',
+      inputSchema: qimenPromptSchema.shape,
+      outputSchema: promptOutputSchema,
+    },
+    async (args) => {
+      try {
+        const customDate = args.customDate ? new Date(args.customDate) : undefined;
+        const result = generateQimen(customDate);
+        return createStructuredToolResult({
+          result,
+          prompt: buildDivinationPromptText({ method: 'qimen', question: args.question, data: result }),
+        });
+      } catch (error) {
+        return createErrorToolResult(getErrorMessage(error, '生成奇门提示词失败'));
       }
     },
   );

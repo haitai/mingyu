@@ -56,7 +56,7 @@ OpenAPI：[https://aov.cc/api/v1/openapi.json](https://aov.cc/api/v1/openapi.jso
 
 ## 给开发者
 
-命语提供三种集成方式：公开 API、MCP Server、公开 skill。README 只保留快速入口和安装方式，接口参数、客户端配置和调用示例请跳转到对应文档。
+命语提供三种集成方式：公开 API、MCP Server、公开 skill。API 和 MCP 都支持一站式返回 `result` 与 `prompt`，README 只保留快速入口和安装方式，接口参数、客户端配置和调用示例请跳转到对应文档。
 
 ### 公开 API
 

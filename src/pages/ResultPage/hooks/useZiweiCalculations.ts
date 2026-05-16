@@ -11,7 +11,7 @@ import type { ZiweiPayloadByScopeState, ZiweiRuntimeState } from '../ResultPage.
 
 async function runZiweiMainThread(
   input: ChartInput,
-  onSuccess: (runtime: ZiweiRuntimeState) => void,
+  onSuccess: (runtime: NonNullable<ZiweiRuntimeState>) => void,
   onError: (message: string) => void,
 ): Promise<void> {
   try {

@@ -14,6 +14,18 @@ import type {
   SupplementaryInfo,
 } from '../../types/divination';
 import { drawSingleCard, drawSpreadCards, getCardKeywords } from '../../utils/tarot';
+import type { DivinationMethodId } from '../divination/config';
+import {
+  BAZI_PROMPT_TOPICS,
+  ZIWEI_PROMPT_SCOPES,
+  ZIWEI_PROMPT_TOPICS,
+  buildBaziPromptForResult,
+  buildSerializableZiweiResult,
+  buildZiweiPromptForRuntime,
+  type BaziPromptTopic,
+  type ZiweiPromptScope,
+  type ZiweiPromptTopic,
+} from './prompt-builders';
 
 const API_VERSION = 'v1';
 const SERVICE_NAME = 'aov.cc';
@@ -73,14 +85,21 @@ const ENDPOINTS = [
   'GET /api/v1/manifest',
   'GET /api/v1/openapi.json',
   'POST /api/v1/bazi/calculate',
+  'POST /api/v1/bazi/prompt',
   'POST /api/v1/ziwei/calculate',
+  'POST /api/v1/ziwei/prompt',
   'POST /api/v1/divination/liuyao',
+  'POST /api/v1/divination/liuyao/prompt',
   'POST /api/v1/divination/meihua',
+  'POST /api/v1/divination/meihua/prompt',
   'POST /api/v1/divination/qimen',
+  'POST /api/v1/divination/qimen/prompt',
   'POST /api/v1/divination/liuren',
+  'POST /api/v1/divination/liuren/prompt',
   'POST /api/v1/divination/tarot',
+  'POST /api/v1/divination/tarot/prompt',
   'POST /api/v1/divination/ssgw',
-  'POST /api/v1/divination/prompt',
+  'POST /api/v1/divination/ssgw/prompt',
 ] as const;
 
 export function getPublicApiManifest() {
@@ -136,6 +155,18 @@ export function getPublicApiOpenApiDocument() {
           responses: { '200': { description: '八字命盘数据' } },
         },
       },
+      '/bazi/prompt': {
+        post: {
+          summary: '八字排盘并生成 AI 解读提示词',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/BaziPromptRequest' } },
+            },
+          },
+          responses: { '200': { description: '八字命盘数据和结构化提示词' } },
+        },
+      },
       '/ziwei/calculate': {
         post: {
           summary: '紫微斗数排盘',
@@ -146,6 +177,18 @@ export function getPublicApiOpenApiDocument() {
             },
           },
           responses: { '200': { description: '紫微命盘数据' } },
+        },
+      },
+      '/ziwei/prompt': {
+        post: {
+          summary: '紫微斗数排盘并生成 AI 解读提示词',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/ZiweiPromptRequest' } },
+            },
+          },
+          responses: { '200': { description: '紫微命盘数据和结构化提示词' } },
         },
       },
       '/divination/liuyao': {
@@ -166,16 +209,18 @@ export function getPublicApiOpenApiDocument() {
       '/divination/ssgw': {
         post: { summary: '三山国王灵签求签', responses: { '200': { description: '灵签结果' } } },
       },
-      '/divination/prompt': {
+      '/divination/{method}/prompt': {
         post: {
-          summary: '基于排盘结果生成 AI 解读提示词',
+          summary: '起卦、抽牌或求签并生成 AI 解读提示词',
           requestBody: {
             required: true,
             content: {
-              'application/json': { schema: { $ref: '#/components/schemas/PromptRequest' } },
+              'application/json': {
+                schema: { $ref: '#/components/schemas/DivinationPromptRequest' },
+              },
             },
           },
-          responses: { '200': { description: '结构化提示词' } },
+          responses: { '200': { description: '占卜结果和结构化提示词' } },
         },
       },
     },
@@ -194,6 +239,19 @@ export function getPublicApiOpenApiDocument() {
             isLeapMonth: { type: 'boolean' },
           },
         },
+        BaziPromptRequest: {
+          allOf: [
+            { $ref: '#/components/schemas/BaziRequest' },
+            {
+              type: 'object',
+              required: ['question'],
+              properties: {
+                question: { type: 'string' },
+                promptTopic: { enum: [...BAZI_PROMPT_TOPICS] },
+              },
+            },
+          ],
+        },
         ZiweiRequest: {
           type: 'object',
           required: ['gender', 'dateType', 'year', 'month', 'day', 'timeIndex'],
@@ -208,15 +266,31 @@ export function getPublicApiOpenApiDocument() {
             isLeapMonth: { type: 'boolean' },
           },
         },
-        PromptRequest: {
+        ZiweiPromptRequest: {
+          allOf: [
+            { $ref: '#/components/schemas/ZiweiRequest' },
+            {
+              type: 'object',
+              required: ['question'],
+              properties: {
+                question: { type: 'string' },
+                promptTopic: { enum: [...ZIWEI_PROMPT_TOPICS] },
+                promptScope: { enum: [...ZIWEI_PROMPT_SCOPES] },
+              },
+            },
+          ],
+        },
+        DivinationPromptRequest: {
           type: 'object',
-          required: ['method', 'question', 'data'],
+          required: ['question'],
           properties: {
-            method: { enum: ['liuyao', 'meihua', 'qimen', 'liuren', 'tarot', 'ssgw'] },
             question: { type: 'string' },
-            data: { type: 'object' },
+            customDate: { type: 'string' },
+            method: { enum: ['time', 'number', 'random', 'external'] },
+            number: { type: 'integer', minimum: 1 },
+            spreadType: { enum: ['single', 'three', 'love', 'career', 'decision'] },
+            template: { enum: ['general', 'ganqing', 'shiye', 'caifu'] },
             supplementaryInfo: { type: 'object' },
-            liurenTemplate: { enum: ['general', 'ganqing', 'shiye', 'caifu'] },
           },
         },
       },
@@ -276,22 +350,36 @@ async function route(context: RouteContext) {
   switch (path) {
     case 'bazi/calculate':
       return calculateBazi(await readJson(context.request));
+    case 'bazi/prompt':
+      return buildBaziPrompt(await readJson(context.request));
     case 'ziwei/calculate':
       return calculateZiwei(await readJson(context.request));
+    case 'ziwei/prompt':
+      return buildZiweiPrompt(await readJson(context.request));
     case 'divination/liuyao':
-      return generateLiuyao(readCustomDate(await readJson(context.request, true)));
+      return calculateLiuyao(await readJson(context.request, true));
+    case 'divination/liuyao/prompt':
+      return buildDivinationPromptResult('liuyao', await readJson(context.request));
     case 'divination/meihua':
       return calculateMeihua(await readJson(context.request, true));
+    case 'divination/meihua/prompt':
+      return buildDivinationPromptResult('meihua', await readJson(context.request));
     case 'divination/qimen':
-      return generateQimen(readCustomDate(await readJson(context.request, true)));
+      return calculateQimen(await readJson(context.request, true));
+    case 'divination/qimen/prompt':
+      return buildDivinationPromptResult('qimen', await readJson(context.request));
     case 'divination/liuren':
       return calculateLiuren(await readJson(context.request, true));
+    case 'divination/liuren/prompt':
+      return buildDivinationPromptResult('liuren', await readJson(context.request));
     case 'divination/tarot':
       return calculateTarot(await readJson(context.request, true));
+    case 'divination/tarot/prompt':
+      return buildDivinationPromptResult('tarot', await readJson(context.request));
     case 'divination/ssgw':
-      return drawRandomSign();
-    case 'divination/prompt':
-      return buildPrompt(await readJson(context.request));
+      return calculateSsgw(await readJson(context.request, true));
+    case 'divination/ssgw/prompt':
+      return buildDivinationPromptResult('ssgw', await readJson(context.request));
     default:
       throw new ApiError(404, 'NOT_FOUND', '没有找到对应的 API 路径。');
   }
@@ -309,11 +397,24 @@ function calculateBazi(input: JsonRecord) {
     isLeapMonth: readBoolean(input, 'isLeapMonth', false),
   };
 
-  return baziCalculator.calculateBazi(person);
+  const result = baziCalculator.calculateBazi(person);
+  return result;
 }
 
-async function calculateZiwei(input: JsonRecord) {
-  const result = await calculateFullZiweiChart(
+function buildBaziPrompt(input: JsonRecord) {
+  const result = calculateBazi(input);
+  return {
+    result,
+    prompt: buildBaziPromptForResult({
+      result,
+      question: readRequiredString(input, 'question'),
+      topic: readEnum(input, 'promptTopic', BAZI_PROMPT_TOPICS, 'general') as BaziPromptTopic,
+    }),
+  };
+}
+
+async function calculateZiweiRuntime(input: JsonRecord) {
+  return calculateFullZiweiChart(
     buildZiweiChartInput({
       name: readString(input, 'name', ''),
       gender: readEnum(input, 'gender', ['male', 'female']),
@@ -326,12 +427,31 @@ async function calculateZiwei(input: JsonRecord) {
       useTrueSolarTime: false,
     }),
   );
+}
 
+async function calculateZiwei(input: JsonRecord) {
+  return buildSerializableZiweiResult(await calculateZiweiRuntime(input));
+}
+
+async function buildZiweiPrompt(input: JsonRecord) {
+  const result = await calculateZiweiRuntime(input);
   return {
-    basicInfo: result.payloadByScope.origin.basic_info,
-    scopeNames: Object.keys(result.payloadByScope),
-    payloadByScope: result.payloadByScope,
+    result: buildSerializableZiweiResult(result),
+    prompt: buildZiweiPromptForRuntime({
+      result,
+      question: readRequiredString(input, 'question'),
+      topic: readEnum(input, 'promptTopic', ZIWEI_PROMPT_TOPICS, 'chat') as ZiweiPromptTopic,
+      scope: readEnum(input, 'promptScope', ZIWEI_PROMPT_SCOPES, 'origin') as ZiweiPromptScope,
+    }),
   };
+}
+
+function calculateLiuyao(input: JsonRecord) {
+  return generateLiuyao(readCustomDate(input));
+}
+
+function calculateQimen(input: JsonRecord) {
+  return generateQimen(readCustomDate(input));
 }
 
 function calculateMeihua(input: JsonRecord) {
@@ -363,25 +483,26 @@ function calculateTarot(input: JsonRecord) {
     'single',
   );
   if (spreadType === 'single') {
-    const result = drawSingleCard();
-    return {
+    const drawResult = drawSingleCard();
+    const output = {
       spreadType: 'single',
       spreadName: '单牌指引',
       cards: [
         {
-          id: result.card.number,
-          name: result.card.name,
-          position: result.position,
-          reversed: result.isReversed,
-          keywords: getCardKeywords(result.card.name).split(','),
+          id: drawResult.card.number,
+          name: drawResult.card.name,
+          position: drawResult.position,
+          reversed: drawResult.isReversed,
+          keywords: getCardKeywords(drawResult.card.name).split(','),
         },
       ],
-      timestamp: result.timestamp,
+      timestamp: drawResult.timestamp,
     };
+    return output;
   }
 
   const result = drawSpreadCards(spreadType);
-  return {
+  const output = {
     spreadType: result.spreadType,
     spreadName: result.spreadName,
     cards: result.cards.map((item) => ({
@@ -393,37 +514,68 @@ function calculateTarot(input: JsonRecord) {
     })),
     timestamp: result.timestamp,
   };
+  return output;
 }
 
-function buildPrompt(input: JsonRecord) {
-  const method = readEnum(input, 'method', [
-    'liuyao',
-    'meihua',
-    'qimen',
-    'liuren',
-    'tarot',
-    'ssgw',
-  ]);
-  const data = readRecord(input, 'data') as unknown as DivinationData;
+function calculateSsgw(_input: JsonRecord) {
+  return drawRandomSign();
+}
+
+function buildDivinationPromptResult(
+  method: Exclude<DivinationMethodId, 'random'>,
+  input: JsonRecord,
+) {
+  const question = readRequiredString(input, 'question');
+  const data = calculateDivinationData(method, input);
+  return {
+    result: data,
+    prompt: buildDivinationPromptText(method, question, data, input),
+  };
+}
+
+function calculateDivinationData(method: Exclude<DivinationMethodId, 'random'>, input: JsonRecord) {
+  const inputWithoutQuestion = { ...input };
+  delete inputWithoutQuestion.question;
+
+  switch (method) {
+    case 'liuyao':
+      return generateLiuyao(readCustomDate(inputWithoutQuestion));
+    case 'meihua':
+      return calculateMeihua(inputWithoutQuestion);
+    case 'qimen':
+      return generateQimen(readCustomDate(inputWithoutQuestion));
+    case 'liuren':
+      return calculateLiuren(inputWithoutQuestion);
+    case 'tarot':
+      return calculateTarot(inputWithoutQuestion);
+    case 'ssgw':
+      return drawRandomSign();
+  }
+}
+
+function buildDivinationPromptText(
+  method: Exclude<DivinationMethodId, 'random'>,
+  question: string,
+  data: unknown,
+  input: JsonRecord,
+) {
   const supplementaryInfo = isRecord(input.supplementaryInfo)
     ? (input.supplementaryInfo as SupplementaryInfo)
     : undefined;
   const liurenTemplate = readEnum(
     input,
-    'liurenTemplate',
+    'template',
     ['general', 'ganqing', 'shiye', 'caifu'],
     'general',
   ) as LiurenTemplateType;
 
-  return {
-    prompt: buildDivinationPrompt(
-      method,
-      readRequiredString(input, 'question'),
-      data,
-      supplementaryInfo,
-      liurenTemplate,
-    ),
-  };
+  return buildDivinationPrompt(
+    method,
+    question,
+    data as DivinationData,
+    supplementaryInfo,
+    liurenTemplate,
+  );
 }
 
 async function readJson(request: Request, optional = false): Promise<JsonRecord> {
@@ -503,14 +655,6 @@ function readRequiredString(input: JsonRecord, key: string) {
   const value = readString(input, key, '');
   if (!value.trim()) {
     throw new ApiError(400, 'BAD_REQUEST', `${key} 不能为空。`);
-  }
-  return value;
-}
-
-function readRecord(input: JsonRecord, key: string) {
-  const value = input[key];
-  if (!isRecord(value)) {
-    throw new ApiError(400, 'BAD_REQUEST', `${key} 必须是对象。`);
   }
   return value;
 }

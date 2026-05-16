@@ -2,8 +2,9 @@ import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { generateLiuren } from '../../../src/lib/divination/algorithms/liuren/index.js';
 import type { LiurenTemplateType } from '../../../src/types/divination.js';
-import { resultOutputSchema } from '../schemas.js';
-import { createErrorToolResult, createResultToolResult, getErrorMessage } from '../tool-results.js';
+import { promptOutputSchema, resultOutputSchema } from '../schemas.js';
+import { createErrorToolResult, createStructuredToolResult, getErrorMessage } from '../tool-results.js';
+import { buildDivinationPromptText } from './prompt-helpers.js';
 
 const liurenSchema = z.object({
   customDate: z.string().optional().describe('自定义排盘时间（ISO 8601 格式），不提供则使用当前时间'),
@@ -11,6 +12,10 @@ const liurenSchema = z.object({
     .enum(['general', 'ganqing', 'shiye', 'caifu'])
     .optional()
     .describe('断课模板：general=通用, ganqing=感情, shiye=事业, caifu=财富'),
+});
+
+const liurenPromptSchema = liurenSchema.extend({
+  question: z.string().describe('用户希望围绕课盘解读的问题'),
 });
 
 export function registerLiurenTool(server: McpServer) {
@@ -24,11 +29,38 @@ export function registerLiurenTool(server: McpServer) {
     async (args) => {
       try {
         const customDate = args.customDate ? new Date(args.customDate) : undefined;
-        const result = generateLiuren(customDate);
         const template: LiurenTemplateType = args.template || 'general';
-        return createResultToolResult({ ...result, template });
+        const result = { ...generateLiuren(customDate), template };
+        return createStructuredToolResult({ result });
       } catch (error) {
         return createErrorToolResult(getErrorMessage(error, '排盘失败'));
+      }
+    },
+  );
+
+  server.registerTool(
+    'liuren_prompt',
+    {
+      description: '大六壬排盘并生成结构化 AI 解读提示词：一次调用返回课盘数据和可直接复制给 AI 的提示词',
+      inputSchema: liurenPromptSchema.shape,
+      outputSchema: promptOutputSchema,
+    },
+    async (args) => {
+      try {
+        const customDate = args.customDate ? new Date(args.customDate) : undefined;
+        const template: LiurenTemplateType = args.template || 'general';
+        const result = { ...generateLiuren(customDate), template };
+        return createStructuredToolResult({
+          result,
+          prompt: buildDivinationPromptText({
+            method: 'liuren',
+            question: args.question,
+            data: result,
+            template,
+          }),
+        });
+      } catch (error) {
+        return createErrorToolResult(getErrorMessage(error, '生成大六壬提示词失败'));
       }
     },
   );
