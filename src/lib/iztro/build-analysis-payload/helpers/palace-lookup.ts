@@ -28,10 +28,22 @@ export function findPalaceByBranch(
   return palaces.find((palace) => palace.earthlyBranch === branch);
 }
 
+export function normalizeStarName(starName: string | undefined) {
+  if (!starName) return '';
+
+  return starName
+    .trim()
+    .replace(/\s+/gu, '')
+    .replace(/[（(][^）)]*[）)]/gu, '')
+    .replace(/化[禄权科忌]$/u, '');
+}
+
 export function findStarPalaceIndex(palaces: IztroPalace[], starName: string): number | undefined {
+  const normalizedTarget = normalizeStarName(starName);
+
   for (const palace of palaces) {
     const all: IztroStar[] = [...palace.majorStars, ...palace.minorStars, ...palace.adjectiveStars];
-    if (all.some((star) => star.name === starName)) {
+    if (all.some((star) => normalizeStarName(star.name) === normalizedTarget)) {
       return palace.index;
     }
   }

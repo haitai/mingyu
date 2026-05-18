@@ -1,6 +1,6 @@
 import type { IztroPalace, IztroStar } from '../../../../types/iztro';
 import type { MutagenName, ScopeMutagenItem, StarFact } from '../../../../types/analysis';
-import { findPalaceByIndex, findStarPalaceIndex } from './palace-lookup';
+import { findPalaceByIndex, findStarPalaceIndex, normalizeStarName } from './palace-lookup';
 
 export const MUTAGEN_ORDER: MutagenName[] = ['禄', '权', '科', '忌'];
 
@@ -22,7 +22,10 @@ export function mapStarFact(
   activeScopeMutagenMap: ScopeMutagenItem[],
   options: { isHoroscopeStar?: boolean } = {},
 ): StarFact {
-  const activeScopeMutagen = activeScopeMutagenMap.find((item) => item.star === star.name)?.mutagen;
+  const normalizedStarName = normalizeStarName(star.name);
+  const activeScopeMutagen = activeScopeMutagenMap.find(
+    (item) => normalizeStarName(item.star) === normalizedStarName,
+  )?.mutagen;
   const rawMutagen = star.mutagen || undefined;
   const isHoroscopeStar = options.isHoroscopeStar ?? star.scope !== 'origin';
 
