@@ -1,8 +1,10 @@
-import type { AnalysisPayloadV1, PalaceFact, StarFact } from '@/types/analysis';
+import type { AnalysisPayloadV1, PalaceFact, StarFact } from '../../types/analysis';
 import { formatPalaceName, mapScopeLabel, normalizePalaceName } from './labels';
 import {
   collectMutagenStars,
   getAllStars,
+  getPalaceByIndex,
+  getPalaceByName,
   getOppositePalace,
   getSurroundedPalaces,
 } from './palace-helpers';
@@ -27,6 +29,138 @@ function filterScopeTagsForOrigin(payload: AnalysisPayloadV1, tags: string[]) {
   if (!isOriginScope(payload)) return tags;
 
   return tags.filter((tag) => !/落宫$/.test(tag) && tag !== '有当前运限四化');
+}
+
+function uniqueStrings(values: Array<string | undefined | null>) {
+  return Array.from(new Set(values.map((item) => item?.trim()).filter(Boolean) as string[]));
+}
+
+function compareMutagenPriority(left: string, right: string) {
+  const leftIndex = ['禄', '权', '科', '忌'].indexOf(left);
+  const rightIndex = ['禄', '权', '科', '忌'].indexOf(right);
+
+  if (leftIndex === -1 && rightIndex === -1) return left.localeCompare(right, 'zh-CN');
+  if (leftIndex === -1) return 1;
+  if (rightIndex === -1) return -1;
+  return leftIndex - rightIndex;
+}
+
+function compareEvidenceStarPriority(left: string, right: string, palace: PalaceFact[]) {
+  const starWeight = (name: string) => {
+    for (const item of palace) {
+      const majorIndex = item.major_stars.findIndex((star) => star.name === name);
+      if (majorIndex !== -1) return majorIndex;
+    }
+
+    for (const item of palace) {
+      const minorIndex = item.minor_stars.findIndex((star) => star.name === name);
+      if (minorIndex !== -1) return 100 + minorIndex;
+    }
+
+    for (const item of palace) {
+      const otherIndex = item.other_stars.findIndex((star) => star.name === name);
+      if (otherIndex !== -1) return 200 + otherIndex;
+    }
+
+    return 999;
+  };
+
+  return starWeight(left) - starWeight(right) || left.localeCompare(right, 'zh-CN');
+}
+
+function resolveEvidencePalaces(
+  payload: AnalysisPayloadV1,
+  palace: PalaceFact[],
+  item: {
+    palace_indexes: number[];
+    palace_names: string[];
+  },
+) {
+  const byIndexes = item.palace_indexes.map((index) => getPalaceByIndex(payload, index));
+  const byNames = item.palace_names.map((name) => getPalaceByName(payload, name));
+
+  return [...palace, ...byIndexes, ...byNames].filter(
+    (candidate, index, list): candidate is PalaceFact => {
+      if (!candidate) return false;
+      return list.findIndex((entry) => entry?.index === candidate.index) === index;
+    },
+  );
+}
+
+function deriveEvidenceStars(
+  payload: AnalysisPayloadV1,
+  focusPalaces: PalaceFact[],
+  item: {
+    palace_indexes: number[];
+    palace_names: string[];
+    star_names: string[];
+    mutagens: string[];
+  },
+) {
+  const palaces = resolveEvidencePalaces(payload, focusPalaces, item);
+  const directStars = uniqueStrings(item.star_names);
+  const mutagenTaggedStars = uniqueStrings(
+    palaces.flatMap((palace) =>
+      getAllStars(palace)
+        .filter(
+          (star) =>
+            !!star.birth_mutagen ||
+            !!star.horoscope_mutagen ||
+            !!star.active_scope_mutagen ||
+            payload.active_scope.mutagen_map.some(
+              (mapped) =>
+                mapped.star === star.name &&
+                (mapped.palace_index === undefined || mapped.palace_index === palace.index),
+            ),
+        )
+        .map((star) => star.name),
+    ),
+  );
+
+  if (directStars.length > 0) {
+    const merged = uniqueStrings([...directStars, ...mutagenTaggedStars]);
+    const base = merged.length > directStars.length ? merged : directStars;
+    return [...base].sort((left, right) => compareEvidenceStarPriority(left, right, palaces));
+  }
+
+  return [...mutagenTaggedStars].sort((left, right) =>
+    compareEvidenceStarPriority(left, right, palaces),
+  );
+}
+
+function deriveEvidenceMutagens(
+  payload: AnalysisPayloadV1,
+  focusPalaces: PalaceFact[],
+  item: {
+    palace_indexes: number[];
+    palace_names: string[];
+    star_names: string[];
+    mutagens: string[];
+  },
+) {
+  const directMutagens = uniqueStrings(item.mutagens).sort(compareMutagenPriority);
+  if (directMutagens.length > 0) {
+    return directMutagens;
+  }
+
+  const palaces = resolveEvidencePalaces(payload, focusPalaces, item);
+  const derivedMutagens = uniqueStrings(
+    palaces.flatMap((palace) => [
+      ...getAllStars(palace).flatMap((star) =>
+        [star.birth_mutagen, star.horoscope_mutagen, star.active_scope_mutagen].filter(Boolean),
+      ),
+      ...(palace.self_mutagens ?? []),
+      ...payload.active_scope.mutagen_map
+        .filter(
+          (mapped) =>
+            mapped.palace_index === palace.index ||
+            (!mapped.palace_index && mapped.palace_name && mapped.palace_name === palace.name),
+        )
+        .map((mapped) => mapped.mutagen),
+    ]),
+  ).sort(compareMutagenPriority);
+
+  return derivedMutagens;
 }
 
 export function buildPalaceSummary(payload: AnalysisPayloadV1, palace: PalaceFact) {
@@ -115,8 +249,8 @@ export function buildEvidenceSummary(
     证据标题: item.title,
     作用范围: mapScopeLabel(item.scope),
     关联宫位: item.palace_names.map((name) => formatPalaceName(name)),
-    关联星曜: item.star_names,
-    关联四化: item.mutagens,
+    关联星曜: deriveEvidenceStars(payload, focusPalaces, item),
+    关联四化: deriveEvidenceMutagens(payload, focusPalaces, item),
     说明: item.description,
   }));
 }
