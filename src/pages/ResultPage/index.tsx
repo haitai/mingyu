@@ -338,7 +338,7 @@ export function ResultPage() {
     hasAstrolabeChart,
   ]);
 
-  function resolveActiveBaziQuestionScene() {
+  const activeBaziQuestionScene = useMemo(() => {
     if (activeBaziShortcutMode === '自定义') {
       return undefined;
     }
@@ -346,7 +346,7 @@ export function ResultPage() {
       return promptState.baziQuestionScene;
     }
     return resolveBaziQuestionSceneByShortcutMode(activeBaziShortcutMode);
-  }
+  }, [activeBaziShortcutMode, promptState.baziQuestionScene]);
 
   function computeBaziPromptText(question: string, finalQuestion: string): string {
     if (promptState.tab !== 'prompt') return '';
@@ -391,7 +391,7 @@ export function ResultPage() {
       return buildUnknownTimeBaziPrompt(
         primaryThreePillarsState.profile,
         question,
-        resolveActiveBaziQuestionScene(),
+        activeBaziQuestionScene,
         { isCustomQuestion },
       );
     }
@@ -403,7 +403,7 @@ export function ResultPage() {
       selectedBaziPreset,
       baziResult,
       baziFortuneContext,
-      resolveActiveBaziQuestionScene(),
+      activeBaziQuestionScene,
       { isCustomQuestion: activeBaziShortcutMode === '自定义' },
     );
     return buildCombinedPromptText(system, user);
@@ -411,10 +411,10 @@ export function ResultPage() {
 
   const defaultBaziQuestion = useMemo(
     () =>
-      getBaziDefaultQuestion(resolveActiveBaziQuestionScene(), {
+      getBaziDefaultQuestion(activeBaziQuestionScene, {
         isCustomQuestion: activeBaziShortcutMode === '自定义',
       }),
-    [activeBaziShortcutMode, promptState.baziQuestionScene],
+    [activeBaziQuestionScene, activeBaziShortcutMode],
   );
   function computeZiweiPromptText(question: string): string {
     if (promptState.tab !== 'prompt') return '';
@@ -429,12 +429,9 @@ export function ResultPage() {
       });
     }
     if (!currentZiweiPayload) return '';
-    return buildCombinedZiweiPrompt(
-      currentZiweiPayload,
-      promptState.ziweiTopic,
-      question,
-      { isCustomQuestion: activeZiweiShortcutMode === '自定义' },
-    );
+    return buildCombinedZiweiPrompt(currentZiweiPayload, promptState.ziweiTopic, question, {
+      isCustomQuestion: activeZiweiShortcutMode === '自定义',
+    });
   }
 
   const finalBaziQuestion = useMemo(() => {

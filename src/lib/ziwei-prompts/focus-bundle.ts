@@ -104,7 +104,8 @@ export function buildFocusTaskBundle(payload: AnalysisPayloadV1, reportContext: 
       };
     case 'relationship-push:relationship-push':
       return {
-        focusSummary: '只解读这段关系当前更适合推进、放慢、稳定经营还是重新评估，以及相关证据与节奏建议。',
+        focusSummary:
+          '只解读这段关系当前更适合推进、放慢、稳定经营还是重新评估，以及相关证据与节奏建议。',
         focusPalaces: dedupePalaces([
           spousePalace,
           mingPalace,
@@ -122,7 +123,8 @@ export function buildFocusTaskBundle(payload: AnalysisPayloadV1, reportContext: 
       };
     case 'relationship-decision:relationship-decision':
       return {
-        focusSummary: '只解读这段关系当前更适合继续投入、放慢观察、重建边界还是及时止损，以及相关证据与判断标准。',
+        focusSummary:
+          '只解读这段关系当前更适合继续投入、放慢观察、重建边界还是及时止损，以及相关证据与判断标准。',
         focusPalaces: dedupePalaces([
           spousePalace,
           mingPalace,
@@ -159,7 +161,8 @@ export function buildFocusTaskBundle(payload: AnalysisPayloadV1, reportContext: 
       };
     case 'job-change:job-change':
       return {
-        focusSummary: '只解读当前是否适合换工作、转方向、试探机会或继续积累，以及相关资源、风险与节奏判断。',
+        focusSummary:
+          '只解读当前是否适合换工作、转方向、试探机会或继续积累，以及相关资源、风险与节奏判断。',
         focusPalaces: dedupePalaces([
           careerPalace,
           wealthPalace,
@@ -178,7 +181,8 @@ export function buildFocusTaskBundle(payload: AnalysisPayloadV1, reportContext: 
       };
     case 'startup-partnership:startup-partnership':
       return {
-        focusSummary: '只解读当前是否适合创业、单干、找人合作、先试水还是继续积累，以及相关资源、风险与行动顺序。',
+        focusSummary:
+          '只解读当前是否适合创业、单干、找人合作、先试水还是继续积累，以及相关资源、风险与行动顺序。',
         focusPalaces: dedupePalaces([
           careerPalace,
           wealthPalace,
@@ -197,7 +201,8 @@ export function buildFocusTaskBundle(payload: AnalysisPayloadV1, reportContext: 
       };
     case 'investment-partnership:investment-partnership':
       return {
-        focusSummary: '只解读当前是否适合投资、独立布局、合作求财、继续观望或先守现金流，以及相关收益模式、风险与行动顺序。',
+        focusSummary:
+          '只解读当前是否适合投资、独立布局、合作求财、继续观望或先守现金流，以及相关收益模式、风险与行动顺序。',
         focusPalaces: dedupePalaces([
           wealthPalace,
           careerPalace,
@@ -255,7 +260,8 @@ export function buildFocusTaskBundle(payload: AnalysisPayloadV1, reportContext: 
       };
     case 'home-move:home-move':
       return {
-        focusSummary: '只解读当前是否适合搬家、换城市、买房置业或调整居住安排，以及相关稳定性、成本与风险判断。',
+        focusSummary:
+          '只解读当前是否适合搬家、换城市、买房置业或调整居住安排，以及相关稳定性、成本与风险判断。',
         focusPalaces: dedupePalaces([
           housePalace,
           travelPalace,
@@ -274,7 +280,8 @@ export function buildFocusTaskBundle(payload: AnalysisPayloadV1, reportContext: 
       };
     case 'settle-relocate:settle-relocate':
       return {
-        focusSummary: '只解读当前是否适合长期定居、换城市发展、两地过渡或暂缓决定，以及相关稳定性、机会、成本与行动顺序。',
+        focusSummary:
+          '只解读当前是否适合长期定居、换城市发展、两地过渡或暂缓决定，以及相关稳定性、机会、成本与行动顺序。',
         focusPalaces: dedupePalaces([
           housePalace,
           travelPalace,
@@ -370,7 +377,8 @@ export function buildFocusTaskBundle(payload: AnalysisPayloadV1, reportContext: 
       };
     case 'study-advance:study-advance':
       return {
-        focusSummary: '只解读当前是否适合考证、读研进修、跨领域学习或暂缓投入，以及相关节奏、代价与提升路径。',
+        focusSummary:
+          '只解读当前是否适合考证、读研进修、跨领域学习或暂缓投入，以及相关节奏、代价与提升路径。',
         focusPalaces: dedupePalaces([
           mingPalace,
           bodyPalace,
@@ -389,7 +397,8 @@ export function buildFocusTaskBundle(payload: AnalysisPayloadV1, reportContext: 
       };
     case 'exam-landing:exam-landing':
       return {
-        focusSummary: '只解读这次考试、面试或申请更适合冲刺、稳住发挥、优化目标还是调整预期，以及相关机会、风险与准备节奏。',
+        focusSummary:
+          '只解读这次考试、面试或申请更适合冲刺、稳住发挥、优化目标还是调整预期，以及相关机会、风险与准备节奏。',
         focusPalaces: dedupePalaces([
           mingPalace,
           fortunePalace,
@@ -408,7 +417,8 @@ export function buildFocusTaskBundle(payload: AnalysisPayloadV1, reportContext: 
       };
     case 'reconciliation-decision:reconciliation-decision':
       return {
-        focusSummary: '只解读这段旧关系当前是否还有复合空间，更适合争取、观察、先立边界还是及时放下，以及相关证据与判断标准。',
+        focusSummary:
+          '只解读这段旧关系当前是否还有复合空间，更适合争取、观察、先立边界还是及时放下，以及相关证据与判断标准。',
         focusPalaces: dedupePalaces([
           spousePalace,
           mingPalace,

@@ -1,8 +1,5 @@
 import { BAZI_QUESTION_SCENES, type BaziQuestionScene } from '@/utils/ai/baziQuestionScene';
-import {
-  ASTROLABE_PROMPT_TOPICS,
-  type AstrolabePromptTopic,
-} from '@/lib/astrolabe-prompts';
+import { ASTROLABE_PROMPT_TOPICS, type AstrolabePromptTopic } from '@/lib/astrolabe-prompts';
 
 export type ResultTabKey = 'bazi' | 'ziwei' | 'astrolabe' | 'prompt';
 export type PromptSourceKey = 'bazi' | 'ziwei' | 'astrolabe';

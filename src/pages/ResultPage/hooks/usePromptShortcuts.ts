@@ -78,9 +78,7 @@ export function usePromptShortcuts(
   const [ziweiQuestionDraft, setZiweiQuestionDraft] = useState(() => {
     const mode = resolveZiweiShortcutMode(promptState, inputState.analysisMode);
     if (mode === '问题灵感') {
-      return (
-        readPromptDraft(ziweiDraftStorageKey, 'inspiration') || promptState.ziweiQuickQuestion
-      );
+      return readPromptDraft(ziweiDraftStorageKey, 'inspiration') || promptState.ziweiQuickQuestion;
     }
 
     return (
@@ -111,9 +109,7 @@ export function usePromptShortcuts(
     );
   });
   const [activeAstrolabeShortcutMode, setActiveAstrolabeShortcutMode] =
-    useState<PromptShortcutMode>(() =>
-      resolveAstrolabeShortcutMode(promptState),
-    );
+    useState<PromptShortcutMode>(() => resolveAstrolabeShortcutMode(promptState));
 
   useEffect(() => {
     const nextMode = resolveBaziShortcutMode(promptState, inputState.analysisMode);
@@ -257,7 +253,7 @@ export function usePromptShortcuts(
       return astrolabeQuestionDraft;
     }
     return findAstrolabeShortcutByMode(activeAstrolabeShortcutMode)?.question || '';
-  }, [activeAstrolabeShortcutMode, astrolabeQuestionDraft, astrolabeShortcutActions]);
+  }, [activeAstrolabeShortcutMode, astrolabeQuestionDraft]);
 
   function applyBaziShortcutMode(mode: PromptShortcutMode) {
     setActiveBaziShortcutMode(mode);

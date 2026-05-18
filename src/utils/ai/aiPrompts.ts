@@ -67,13 +67,7 @@ const COMPAT_SYSTEM_RULES = [
 ];
 
 function buildSystemText(rules: readonly string[] = BASE_SYSTEM_RULES): string {
-  const normalizedRules = Array.from(
-    new Set(
-      rules
-        .map((line) => line.trim())
-        .filter(Boolean),
-    ),
-  );
+  const normalizedRules = Array.from(new Set(rules.map((line) => line.trim()).filter(Boolean)));
   return [BASE_SYSTEM_ROLE, '要求：', ...normalizedRules.map((line) => `- ${line}`)].join('\n');
 }
 
@@ -396,10 +390,7 @@ export function buildPromptFromConfig(
       buildPromptSection('问题', normalizedQuestion),
       isCustomQuestion
         ? ''
-        : buildPromptSection(
-            '问题研判框架',
-            buildBaziQuestionGuidanceSection(scene, false),
-          ),
+        : buildPromptSection('问题研判框架', buildBaziQuestionGuidanceSection(scene, false)),
       isCustomQuestion ? '' : buildPromptSection('任务', '请直接判断重点。'),
       isCustomQuestion
         ? ''
@@ -469,7 +460,9 @@ export function getCompatibilityPrompt(
       buildPromptSection('当前时间', formatPromptCurrentTime()),
       buildPromptSection('第一人排盘信息', data1),
       buildPromptSection('第二人排盘信息', data2),
-      !isCustomQuestion && enhancedSection ? buildPromptSection('合盘分析框架', enhancedSection) : '',
+      !isCustomQuestion && enhancedSection
+        ? buildPromptSection('合盘分析框架', enhancedSection)
+        : '',
       buildPromptSection(
         '问题',
         questionText.trim() || getBaziCompatibilityDefaultQuestion(compatType),

@@ -151,10 +151,7 @@ export function buildZiweiPromptForRuntime(params: {
   const payload =
     params.result.payloadByScope[scope as ScopeType] ?? params.result.payloadByScope.origin;
   const fallbackTopic = params.mode === 'custom' ? 'chat' : 'life';
-  return buildCombinedZiweiPrompt(
-    payload,
-    params.topic ?? fallbackTopic,
-    params.question ?? '',
-    { isCustomQuestion: params.mode === 'custom' },
-  );
+  return buildCombinedZiweiPrompt(payload, params.topic ?? fallbackTopic, params.question ?? '', {
+    isCustomQuestion: params.mode === 'custom',
+  });
 }

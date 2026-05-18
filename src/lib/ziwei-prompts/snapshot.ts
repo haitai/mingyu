@@ -16,13 +16,7 @@ function dedupeAndTrim(values: string[] | undefined, limit: number) {
     return [];
   }
 
-  return Array.from(
-    new Set(
-      values
-        .map((item) => item.trim())
-        .filter(Boolean),
-    ),
-  ).slice(0, limit);
+  return Array.from(new Set(values.map((item) => item.trim()).filter(Boolean))).slice(0, limit);
 }
 
 function normalizeHintSentence(value: string) {
@@ -116,13 +110,15 @@ export function buildPromptContextSnapshot(params: {
             )
           : undefined,
     },
-    命盘格局: sortByPriority(patterns).slice(0, 4).map((item) => ({
-      格局: item.name,
-      性质: item.kind === 'auspicious' ? '吉格' : item.kind === 'inauspicious' ? '凶格' : '中性',
-      关联宫位: item.palace_names.map((name) => formatPalaceName(name)),
-      关联星曜: item.star_names,
-      说明: item.description,
-    })),
+    命盘格局: sortByPriority(patterns)
+      .slice(0, 4)
+      .map((item) => ({
+        格局: item.name,
+        性质: item.kind === 'auspicious' ? '吉格' : item.kind === 'inauspicious' ? '凶格' : '中性',
+        关联宫位: item.palace_names.map((name) => formatPalaceName(name)),
+        关联星曜: item.star_names,
+        说明: item.description,
+      })),
     运限结构: buildScopeStructureSummary(payload).slice(0, 8),
     重点宫位摘要: focusPalaces.map((item) => buildPalaceSummary(payload, item)),
     关键证据摘要: buildEvidenceSummary(payload, focusPalaces, reportContext).slice(0, 6),
