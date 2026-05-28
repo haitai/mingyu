@@ -123,42 +123,39 @@ function readParticipantBirthInput(item: AlmanacParticipantInput) {
 function createParticipantProfiles(
   participants: AlmanacParticipantInput[],
 ): AlmanacParticipantProfile[] {
-  return participants
-    .filter(shouldBuildParticipantProfile)
-    .map((item) => {
-      const birthInput = readParticipantBirthInput(item);
-      const chart = baziCalculator.calculateBazi({
-        year: birthInput.year,
-        month: birthInput.month,
-        day: birthInput.day,
-        timeIndex: birthInput.timeIndex,
-        gender: item.gender === '男' ? 'male' : item.gender === '女' ? 'female' : '',
-        isLunar: item.dateType === 'lunar',
-        isLeapMonth: Boolean(item.isLeapMonth),
-        useTrueSolarTime: false,
-      });
-
-      return {
-        id: item.id,
-        name: item.name.trim() || '未命名参与人',
-        gender: item.gender,
-        solarDate: `${chart.solarDate.year}-${String(chart.solarDate.month).padStart(2, '0')}-${String(chart.solarDate.day).padStart(2, '0')}`,
-        lunarDate: `${chart.lunarDate.monthName}${chart.lunarDate.dayName}`,
-        zodiac: chart.zodiac,
-        constellation: chart.constellation,
-        dayMaster: chart.dayMaster.gan,
-        dayMasterElement: chart.dayMaster.element,
-        pillars: {
-          year: chart.pillars.year.ganZhi,
-          month: chart.pillars.month.ganZhi,
-          day: chart.pillars.day.ganZhi,
-          hour: chart.pillars.hour.ganZhi,
-        },
-        usefulGods: chart.analysis.usefulGod.favorableWuxing ?? chart.analysis.usefulGod.favorable,
-        avoidGods:
-          chart.analysis.usefulGod.unfavorableWuxing ?? chart.analysis.usefulGod.unfavorable,
-      };
+  return participants.filter(shouldBuildParticipantProfile).map((item) => {
+    const birthInput = readParticipantBirthInput(item);
+    const chart = baziCalculator.calculateBazi({
+      year: birthInput.year,
+      month: birthInput.month,
+      day: birthInput.day,
+      timeIndex: birthInput.timeIndex,
+      gender: item.gender === '男' ? 'male' : item.gender === '女' ? 'female' : '',
+      isLunar: item.dateType === 'lunar',
+      isLeapMonth: Boolean(item.isLeapMonth),
+      useTrueSolarTime: false,
     });
+
+    return {
+      id: item.id,
+      name: item.name.trim() || '未命名参与人',
+      gender: item.gender,
+      solarDate: `${chart.solarDate.year}-${String(chart.solarDate.month).padStart(2, '0')}-${String(chart.solarDate.day).padStart(2, '0')}`,
+      lunarDate: `${chart.lunarDate.monthName}${chart.lunarDate.dayName}`,
+      zodiac: chart.zodiac,
+      constellation: chart.constellation,
+      dayMaster: chart.dayMaster.gan,
+      dayMasterElement: chart.dayMaster.element,
+      pillars: {
+        year: chart.pillars.year.ganZhi,
+        month: chart.pillars.month.ganZhi,
+        day: chart.pillars.day.ganZhi,
+        hour: chart.pillars.hour.ganZhi,
+      },
+      usefulGods: chart.analysis.usefulGod.favorableWuxing ?? chart.analysis.usefulGod.favorable,
+      avoidGods: chart.analysis.usefulGod.unfavorableWuxing ?? chart.analysis.usefulGod.unfavorable,
+    };
+  });
 }
 
 function scoreDay(params: {

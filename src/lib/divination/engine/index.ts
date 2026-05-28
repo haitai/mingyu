@@ -329,7 +329,9 @@ export function buildDivinationPrompt(
 }
 
 function buildSupplementaryInfo(draft: DivinationDraft): SupplementaryInfo | undefined {
-  const birthYear = draft.birthYear.trim() ? readOptionalPositiveIntegerText(draft.birthYear) : undefined;
+  const birthYear = draft.birthYear.trim()
+    ? readOptionalPositiveIntegerText(draft.birthYear)
+    : undefined;
   const hasBirthYear = typeof birthYear === 'number' && Number.isFinite(birthYear);
 
   const info: SupplementaryInfo = {};
