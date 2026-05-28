@@ -100,9 +100,103 @@ function resolvePromptScene(promptId: string): PromptChartScene {
   return 'general';
 }
 
+function removePromptLabel(value: string, label: string) {
+  return value.startsWith(label) ? value.slice(label.length).trim() : value;
+}
+
+function findFortuneSummaryLine(ctx: FortuneSelectionContext, prefixes: string[]) {
+  return ctx.promptPayload.summaryLines.find((line) =>
+    prefixes.some((prefix) => line.startsWith(prefix)),
+  );
+}
+
+function buildFortuneSelectedObjectText(ctx: FortuneSelectionContext) {
+  return removePromptLabel(ctx.promptPayload.scopeLabel, '分析对象：');
+}
+
+function buildFortuneTimingText(ctx: FortuneSelectionContext) {
+  if (ctx.scope === 'dayun') {
+    return `选择日期：${ctx.cycleStartYear}年起，约${ctx.cycleAge}岁交运`;
+  }
+
+  if (ctx.scope === 'year') {
+    return `选择日期：${ctx.year ?? '未标注'}年${ctx.yearAge ? `（${ctx.yearAge}岁）` : ''}`;
+  }
+
+  if (ctx.scope === 'month') {
+    const month = ctx.monthBreakdown?.[0];
+    if (!month) return '';
+    const start = [month.startTermName, month.startDateTime].filter(Boolean).join(' ');
+    const end = [month.endTermName, month.endDateTime].filter(Boolean).join(' ');
+    const jieqiText =
+      start || end
+        ? `（节气月：${start || month.startDate} 起，${end || month.endDate} 交下节）`
+        : '';
+    return `选择日期：${month.startDate} 至 ${month.endDate}${jieqiText}`;
+  }
+
+  const day = ctx.dayBreakdown?.[0];
+  const ziChuText = findFortuneSummaryLine(ctx, ['按子初换日：']);
+  return ['选择日期：', day?.date ?? ctx.displayLabel, ziChuText ? `（${ziChuText}）` : ''].join(
+    '',
+  );
+}
+
+function buildFortuneHierarchyText(ctx: FortuneSelectionContext) {
+  const parents = ctx.promptPayload.summaryLines
+    .filter(
+      (line) =>
+        line.startsWith('所属大运：') ||
+        line.startsWith('所属流年：') ||
+        line.startsWith('所属流月：'),
+    )
+    .map((line) =>
+      line
+        .replace(/^所属大运：/, '')
+        .replace(/^所属流年：/, '')
+        .replace(/^所属流月：/, '')
+        .replace(/\s+/g, ''),
+    );
+
+  return parents.length ? `上层岁运：${parents.join(' > ')}` : '';
+}
+
+function buildFortuneGanZhiText(ctx: FortuneSelectionContext) {
+  const ganZhiLine = findFortuneSummaryLine(ctx, ['大运干支：', '流年干支：', '流月：', '流日：']);
+  const tenGodLine = findFortuneSummaryLine(ctx, [
+    '大运十神：',
+    '流年十神：',
+    '流月十神：',
+    '流日十神：',
+  ]);
+
+  if (!ganZhiLine && !tenGodLine) return '';
+  return [
+    '当前干支：',
+    ganZhiLine ? removePromptLabel(ganZhiLine, ganZhiLine.split('：')[0] + '：') : '',
+    tenGodLine ? `；${removePromptLabel(tenGodLine, tenGodLine.split('：')[0] + '：')}` : '',
+  ].join('');
+}
+
+function buildFortuneTriggerText(ctx: FortuneSelectionContext) {
+  const triggerLine = ctx.promptPayload.summaryLines.find((line) => line.includes('触发：'));
+  return triggerLine ? `核心触发：${triggerLine.replace(/^[^：]+触发：/, '')}` : '';
+}
+
+function buildFortuneUsageBoundaryText(scope: FortuneSelectionContext['scope']) {
+  const boundaryMap: Record<FortuneSelectionContext['scope'], string> = {
+    dayun: '使用边界：只判断这步大运的十年阶段主题；未选择流年时不指定某一年。',
+    year: '使用边界：只判断这一年的年度触发；未选择流月或流日时不指定具体月日。',
+    month: '使用边界：只判断这个节气月窗口；未选择流日时不指定具体日期。',
+    day: '使用边界：只判断这个流日的执行、沟通、触发和避险，不改写长期趋势。',
+  };
+
+  return boundaryMap[scope];
+}
+
 function formatFortuneSelectionSection(
   ctx: FortuneSelectionContext | null | undefined,
-  options: { includeBreakdown?: boolean } = {},
+  _options: { includeBreakdown?: boolean } = {},
 ): string {
   if (!ctx) return '';
   const { promptPayload } = ctx;
@@ -115,17 +209,12 @@ function formatFortuneSelectionSection(
   };
   const lines = [
     promptPayload.scopeLabel,
+    buildFortuneTimingText(ctx),
     scopeBoundaryMap[ctx.scope],
     '应期层级：本命定底色，大运定阶段，流年定年度触发，流月定月份窗口，流日定具体执行。',
-    '本次只按上面这个分析对象作答，不展开用户未选择的下级岁运。',
-    '关键资料：',
-    ...promptPayload.summaryLines,
+    '本次以上面这个分析对象为主；下级岁运列表是推算依据，不等同于用户已逐项选择。',
   ];
-  if (
-    options.includeBreakdown &&
-    promptPayload.breakdownTitle &&
-    promptPayload.breakdownLines?.length
-  ) {
+  if (promptPayload.breakdownTitle && promptPayload.breakdownLines?.length) {
     lines.push(promptPayload.breakdownTitle);
     lines.push(...promptPayload.breakdownLines.map((line, i) => `${i + 1}. ${line}`));
   }
@@ -133,9 +222,18 @@ function formatFortuneSelectionSection(
 }
 
 function formatFortuneEvidenceSection(ctx: FortuneSelectionContext | null | undefined): string {
-  if (!ctx?.promptPayload.evidenceLines?.length) return '';
+  if (!ctx) return '';
 
-  return ctx.promptPayload.evidenceLines.join('\n');
+  return [
+    `已选对象：${buildFortuneSelectedObjectText(ctx)}`,
+    buildFortuneTimingText(ctx),
+    buildFortuneHierarchyText(ctx),
+    buildFortuneGanZhiText(ctx),
+    buildFortuneTriggerText(ctx),
+    buildFortuneUsageBoundaryText(ctx.scope),
+  ]
+    .filter(Boolean)
+    .join('\n');
 }
 
 function buildBaziScopePrioritySection(hasFortuneSelection: boolean): string {

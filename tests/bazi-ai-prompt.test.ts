@@ -280,12 +280,15 @@ test('八字提示词写入年限选择后应补充年限解读规则', () => {
 
   assert.match(prompt.user, /【分析对象】/);
   assert.match(prompt.user, /【年限触发摘要】/);
-  assert.match(prompt.user, /【主证】用户已选择年限运限/);
-  assert.match(prompt.user, /【主证】流年干支与十神/);
-  assert.match(prompt.user, /【辅证】上层岁运背景/);
-  assert.match(prompt.user, /【限制】断事层级限制/);
-  assert.doesNotMatch(prompt.user, /该流年包含的流月/);
-  assert.doesNotMatch(prompt.user, /交下节/);
+  assert.match(prompt.user, /已选对象：\d{4}年流年/);
+  assert.match(prompt.user, /选择日期：\d{4}年/);
+  assert.match(prompt.user, /上层岁运：/);
+  assert.match(prompt.user, /当前干支：/);
+  assert.match(prompt.user, /核心触发：/);
+  assert.match(prompt.user, /使用边界：只判断这一年的年度触发/);
+  assert.doesNotMatch(prompt.user, /【主证】|【辅证】|【限制】|来源：|标签：/);
+  assert.match(prompt.user, /该流年包含的流月/);
+  assert.match(prompt.user, /交下节/);
   assert.match(prompt.user, /【年限解读规则】/);
   assert.match(prompt.user, /当前已选流年：回答以该年年度触发为主，必须承接所属大运背景/);
   assert.match(prompt.user, /大运层：看十年阶段的环境、身份、资源、压力和机会方向/);
@@ -294,6 +297,51 @@ test('八字提示词写入年限选择后应补充年限解读规则', () => {
   assert.ok(prompt.user.indexOf('【分析对象】') < prompt.user.indexOf('【年限触发摘要】'));
   assert.ok(prompt.user.indexOf('【年限触发摘要】') < prompt.user.indexOf('【年限解读规则】'));
   assert.ok(prompt.user.indexOf('【年限解读规则】') < prompt.user.indexOf('【分析对象优先级】'));
+});
+
+test('八字流月提示词应突出所选日期范围且不输出证据调试字段', () => {
+  const result = baziCalculator.calculateBazi({
+    year: 1990,
+    month: 5,
+    day: 15,
+    timeIndex: 1,
+    gender: 'male',
+    isLunar: false,
+    isLeapMonth: false,
+    useTrueSolarTime: false,
+  });
+  const fortuneContext = buildFortuneSelectionContext(result, {
+    scope: 'month',
+    cycleIndex: 0,
+    year: 1990,
+    month: 1,
+  });
+
+  assert.ok(fortuneContext);
+
+  const prompt = buildPromptFromConfig(
+    '这个月适合推进工作变化吗？',
+    {
+      id: 'ai-job-change',
+      prompt: '测试',
+      scene: 'job-change',
+    },
+    result,
+    fortuneContext,
+    'job-change',
+    { isCustomQuestion: false },
+  );
+  const fortuneSection =
+    prompt.user.match(/【年限触发摘要】([\s\S]*?)\n\n【年限解读规则】/)?.[1] || '';
+
+  assert.match(fortuneSection, /已选对象：\d{4}年.+流月/);
+  assert.match(fortuneSection, /选择日期：\d{4}-\d{2}-\d{2} 至 \d{4}-\d{2}-\d{2}/);
+  assert.match(fortuneSection, /节气月：/);
+  assert.match(fortuneSection, /上层岁运：/);
+  assert.match(fortuneSection, /使用边界：只判断这个节气月窗口/);
+  assert.match(prompt.user, /该流月包含的流日/);
+  assert.match(prompt.user, /\d{4}-\d{2}-\d{2} .+｜十神/);
+  assert.doesNotMatch(fortuneSection, /【主证】|来源：|标签：|断事层级限制/);
 });
 
 test('八字提示词未选择年限时不输出年限触发摘要', () => {
