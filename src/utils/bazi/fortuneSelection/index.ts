@@ -43,6 +43,41 @@ function formatGanZhiTenGod(result: BaziChartResult, ganZhi: string | undefined)
   return `天干${parts.gan}为${getTenGod(parts.gan, result.dayMaster.gan)}，地支${parts.zhi}主气为${getTenGodForBranch(parts.zhi, result.dayMaster.gan)}`;
 }
 
+function formatYearBreakdownLine(
+  result: BaziChartResult,
+  item: { year: number; age: number; ganZhi: string },
+) {
+  return `${item.year}年（${item.age}岁） ${item.ganZhi}｜十神 ${formatGanZhiTenGod(result, item.ganZhi)}`;
+}
+
+function formatMonthBreakdownLine(
+  result: BaziChartResult,
+  item: {
+    month: number;
+    label: string;
+    ganZhi: string;
+    startDate: string;
+    endDate: string;
+    startDateTime?: string;
+    endDateTime?: string;
+    startTermName?: string;
+    endTermName?: string;
+  },
+) {
+  return `${item.month}月（${item.label}） ${item.ganZhi}｜十神 ${formatGanZhiTenGod(result, item.ganZhi)}｜日期范围 ${item.startDate} 至 ${item.endDate}｜交节 ${item.startTermName || ''} ${item.startDateTime || ''} 起，${item.endTermName || ''} ${item.endDateTime || ''} 交下节`;
+}
+
+function formatDayBreakdownLine(
+  result: BaziChartResult,
+  item: {
+    date: string;
+    ganZhi: string;
+    boundaryNote?: string;
+  },
+) {
+  return `${item.date} ${item.ganZhi}｜十神 ${formatGanZhiTenGod(result, item.ganZhi)}${item.boundaryNote ? `｜${item.boundaryNote}` : ''}`;
+}
+
 function buildGanZhiTriggerSummary(
   result: BaziChartResult,
   ganZhi: string | undefined,
@@ -307,10 +342,13 @@ export function buildFortuneSelectionContext(
           limitText: '大运不能替代流年给出精确年份；需要用户继续选择流年后才能断年度触发。',
         }),
         breakdownTitle: '该大运包含的流年',
-        breakdownLines: breakdown.map(
-          (item) =>
-            `${item.year}年（${item.age}岁） ${item.ganZhi}｜十神 ${formatGanZhiTenGod(result, item.ganZhi)}`,
-        ),
+        breakdownLines: breakdown.map((item) => formatYearBreakdownLine(result, item)),
+        detailGroups: [
+          {
+            title: '该大运包含的流年',
+            lines: breakdown.map((item) => formatYearBreakdownLine(result, item)),
+          },
+        ],
       },
     };
   }
@@ -331,6 +369,8 @@ export function buildFortuneSelectionContext(
       startTermName: item.startTermName,
       endTermName: item.endTermName,
     }));
+    const cycleYearLines = cycle.years.map((item) => formatYearBreakdownLine(result, item));
+    const monthLines = breakdown.map((item) => formatMonthBreakdownLine(result, item));
     const yearTenGod = formatGanZhiTenGod(result, yearItem.ganZhi);
     const yearTriggerSummary = buildGanZhiTriggerSummary(result, yearItem.ganZhi, '流年');
 
@@ -363,10 +403,17 @@ export function buildFortuneSelectionContext(
           limitText: '未选择具体流月或流日时，不得把某月某日硬断成唯一应期。',
         }),
         breakdownTitle: '该流年包含的流月',
-        breakdownLines: breakdown.map(
-          (item) =>
-            `${item.month}月（${item.label}） ${item.ganZhi}｜十神 ${formatGanZhiTenGod(result, item.ganZhi)}｜日期范围 ${item.startDate} 至 ${item.endDate}｜交节 ${item.startTermName || ''} ${item.startDateTime || ''} 起，${item.endTermName || ''} ${item.endDateTime || ''} 交下节`,
-        ),
+        breakdownLines: monthLines,
+        detailGroups: [
+          {
+            title: '所属大运包含的流年',
+            lines: cycleYearLines,
+          },
+          {
+            title: '该流年包含的流月',
+            lines: monthLines,
+          },
+        ],
       },
     };
   }
@@ -384,6 +431,19 @@ export function buildFortuneSelectionContext(
       endDateTime: item.endDateTime,
       boundaryNote: item.boundaryNote,
     }));
+    const yearMonthBreakdown = monthInfoList.map((item, index) => ({
+      month: index + 1,
+      label: item.month,
+      ganZhi: item.ganZhi,
+      startDate: item.startDate,
+      endDate: item.endDate,
+      startDateTime: item.startDateTime,
+      endDateTime: item.endDateTime,
+      startTermName: item.startTermName,
+      endTermName: item.endTermName,
+    }));
+    const yearMonthLines = yearMonthBreakdown.map((item) => formatMonthBreakdownLine(result, item));
+    const dayLines = breakdown.map((item) => formatDayBreakdownLine(result, item));
     const monthTenGod = formatGanZhiTenGod(result, monthInfo.ganZhi);
     const monthTriggerSummary = buildGanZhiTriggerSummary(result, monthInfo.ganZhi, '流月');
 
@@ -435,10 +495,17 @@ export function buildFortuneSelectionContext(
             '流月只细化年度主题，不能推翻本命、大运与流年主线；未选择流日时不硬给具体日期。',
         }),
         breakdownTitle: '该流月包含的流日',
-        breakdownLines: breakdown.map(
-          (item) =>
-            `${item.date} ${item.ganZhi}｜十神 ${formatGanZhiTenGod(result, item.ganZhi)}${item.boundaryNote ? `｜${item.boundaryNote}` : ''}`,
-        ),
+        breakdownLines: dayLines,
+        detailGroups: [
+          {
+            title: '所属流年包含的流月',
+            lines: yearMonthLines,
+          },
+          {
+            title: '该流月包含的流日',
+            lines: dayLines,
+          },
+        ],
       },
     };
   }
@@ -455,6 +522,16 @@ export function buildFortuneSelectionContext(
   const ziChuEnd = `${actualDate} 22:59`;
   const dayTenGod = formatGanZhiTenGod(result, dayInfo.ganZhi);
   const dayTriggerSummary = buildGanZhiTriggerSummary(result, dayInfo.ganZhi, '流日');
+  const monthDayLines = dayInfoList.map((item) =>
+    formatDayBreakdownLine(result, {
+      date: item.solarDate,
+      ganZhi: item.ganZhi,
+      boundaryNote: item.boundaryNote,
+    }),
+  );
+  const hourLines = hourBreakdown.map((item) =>
+    `${item.label} ${item.timeRange || ''} ${item.ganZhi}`.trim(),
+  );
 
   return {
     ...baseContext,
@@ -498,9 +575,17 @@ export function buildFortuneSelectionContext(
         limitText: '流日只判断当日执行、沟通、避险和即时触发，不得改写长期命局或整年趋势。',
       }),
       breakdownTitle: '该流日包含的流时',
-      breakdownLines: hourBreakdown.map((item) =>
-        `${item.label} ${item.timeRange || ''} ${item.ganZhi}`.trim(),
-      ),
+      breakdownLines: hourLines,
+      detailGroups: [
+        {
+          title: '所属流月包含的流日',
+          lines: monthDayLines,
+        },
+        {
+          title: '该流日包含的流时',
+          lines: hourLines,
+        },
+      ],
     },
   };
 }

@@ -882,7 +882,7 @@ test('MCP 六爻与大六壬提示词工具应区分专项模板字段', async (
       },
     });
     assert.equal(liuyaoResult.isError, undefined, 'liuyao_prompt 不应返回错误');
-    assert.match(String(liuyaoResult.structuredContent?.prompt), /【断卦模板】/);
+    assert.match(String(liuyaoResult.structuredContent?.prompt), /【断卦要点】/);
     assert.match(String(liuyaoResult.structuredContent?.prompt), /断卦类型：鬼神怪异/);
 
     const liurenResult = await client.callTool({
@@ -894,7 +894,7 @@ test('MCP 六爻与大六壬提示词工具应区分专项模板字段', async (
       },
     });
     assert.equal(liurenResult.isError, undefined, 'liuren_prompt 不应返回错误');
-    assert.match(String(liurenResult.structuredContent?.prompt), /【断课模板】/);
+    assert.match(String(liurenResult.structuredContent?.prompt), /【断课要点】/);
     assert.match(String(liurenResult.structuredContent?.prompt), /断课类型：事业断课/);
   });
 });

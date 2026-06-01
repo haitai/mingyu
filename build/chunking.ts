@@ -19,9 +19,12 @@ export function getManualChunk(id: string) {
     id.includes('src/lib/iztro') ||
     id.includes('src/lib/ziwei-') ||
     id.includes('src/lib/full-chart-engine.ts') ||
-    id.includes('src/types/analysis.ts')
+    id.includes('src/lib/full-chart-engine/') ||
+    id.includes('src/types/analysis.ts') ||
+    id.includes('src/utils/bazi') ||
+    id.includes('src/utils/dateUtils.ts')
   ) {
-    return 'ziwei-core';
+    return 'chart-engine';
   }
 
   if (id.includes('src/lib/prompt-engine.ts') || id.includes('src/utils/ai')) {
@@ -30,10 +33,6 @@ export function getManualChunk(id: string) {
 
   if (id.includes('src/components/BaziFortuneTools/')) {
     return 'bazi-fortune-ui';
-  }
-
-  if (id.includes('src/utils/bazi') || id.includes('src/utils/dateUtils.ts')) {
-    return 'bazi-engine';
   }
 
   return undefined;

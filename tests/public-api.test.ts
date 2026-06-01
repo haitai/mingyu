@@ -1271,7 +1271,7 @@ test('公开 API 紫微农历闰月不存在时应返回参数错误', async () 
   assert.match(body.error.message, /农历日期不存在/);
 });
 
-test('公开 API 紫微自定义提示词不强塞分析框架', async () => {
+test('公开 API 紫微自定义提示词不强塞分析思路', async () => {
   const { response, body } = await callApi('ziwei/prompt', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -1293,7 +1293,7 @@ test('公开 API 紫微自定义提示词不强塞分析框架', async () => {
   assert.match(body.data.prompt, /【问题】/);
   assert.match(body.data.prompt, /只回答我这个具体问题/);
   assert.match(body.data.prompt, /分析主题：自由聊天/);
-  assert.doesNotMatch(body.data.prompt, /【分析框架】/);
+  assert.doesNotMatch(body.data.prompt, /【分析思路】/);
   assert.doesNotMatch(body.data.prompt, /【任务】/);
   assert.doesNotMatch(body.data.prompt, /【输出要求】/);
 });
@@ -1619,7 +1619,7 @@ test('公开 API 六爻与大六壬提示词接口应区分专项模板字段', 
 
   assert.equal(liuyao.response.status, 200);
   assert.equal(liuyao.body.ok, true);
-  assert.match(liuyao.body.data.prompt, /【断卦模板】/);
+  assert.match(liuyao.body.data.prompt, /【断卦要点】/);
   assert.match(liuyao.body.data.prompt, /断卦类型：鬼神怪异/);
 
   const liuren = await callApi('divination/liuren/prompt', {
@@ -1634,7 +1634,7 @@ test('公开 API 六爻与大六壬提示词接口应区分专项模板字段', 
 
   assert.equal(liuren.response.status, 200);
   assert.equal(liuren.body.ok, true);
-  assert.match(liuren.body.data.prompt, /【断课模板】/);
+  assert.match(liuren.body.data.prompt, /【断课要点】/);
   assert.match(liuren.body.data.prompt, /断课类型：事业断课/);
 });
 

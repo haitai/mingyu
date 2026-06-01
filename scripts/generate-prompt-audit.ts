@@ -46,7 +46,7 @@ const CONTEST_SOURCE = 'docs/2025第十六届全球算命师比赛/00_原题目.
 const REQUIRED_SAMPLE_FIELDS: RequiredSampleFields[] = [
   {
     sampleName: '八字排盘',
-    requiredFields: ['【分析对象】', '【年限触发摘要】', '【年限解读规则】'],
+    requiredFields: ['【分析对象】', '【岁运重点】', '【解读方法】'],
   },
   {
     sampleName: '反推时辰',
@@ -60,7 +60,7 @@ const REQUIRED_SAMPLE_FIELDS: RequiredSampleFields[] = [
   },
   {
     sampleName: '紫微斗数',
-    requiredFields: ['【当前运限】', '【运限命中摘要】', '【运限解读规则】'],
+    requiredFields: ['【分析对象】', '【本命资料】', '【解读方法】'],
   },
   {
     sampleName: '星盘',
@@ -423,7 +423,7 @@ async function buildSamples(): Promise<PromptSample[]> {
         notes: [
           '原题未给广东具体城市，因此本次八字样本未启用真太阳时。',
           baziFortuneContext
-            ? '八字样本通过项目年限选择逻辑写入流年分析对象，用于展示年限解读规则。'
+            ? '八字样本通过项目年限选择逻辑写入流年分析对象，用于展示岁运解读方法。'
             : '未能找到对应流年上下文时退回本命范围。',
         ],
       },

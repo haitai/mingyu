@@ -209,11 +209,11 @@ function buildBaziText(baziResult: BaziChartResult, options: FormatBaziOptions):
     result += `喜忌十神: ${joinOrFallback(analysis.usefulGod.favorable)} | ${joinOrFallback(analysis.usefulGod.unfavorable)}\n`;
     result += `十神归类: 喜${analysis.usefulGod.useful} 忌${analysis.usefulGod.avoid}\n`;
     if (includeRules && analysis.usefulGod.primaryReason) {
-      result += `主导规则: ${analysis.usefulGod.primaryReason}\n`;
+      result += `取用主线: ${analysis.usefulGod.primaryReason}\n`;
     }
     const promptStrategyTrace = filterPromptStrategyTrace(analysis.usefulGod.strategyTrace);
     if (includeRules && promptStrategyTrace.length) {
-      result += `取用路径: ${promptStrategyTrace.join(' -> ')}\n`;
+      result += `取用脉络: ${promptStrategyTrace.join(' -> ')}\n`;
     }
   }
 
@@ -336,9 +336,9 @@ function getPromptSceneOptions(scene: PromptChartScene): FormatBaziOptions {
       includeRules: true,
       includeShensha: false,
       includeShenShaAnalysis: true,
-      includeWuxing: false,
+      includeWuxing: true,
       includeCurrentTiming: false,
-      includeSpecialPillars: false,
+      includeSpecialPillars: true,
       includeLuckOverview: true,
       includeCurrentLiunian: true,
     };
@@ -374,7 +374,7 @@ function getPromptSceneOptions(scene: PromptChartScene): FormatBaziOptions {
     includeRules: true,
     includeShensha: false,
     includeShenShaAnalysis: true,
-    includeWuxing: false,
+    includeWuxing: true,
     includeCurrentTiming: false,
     includeSpecialPillars: true,
     includeLuckOverview: true,

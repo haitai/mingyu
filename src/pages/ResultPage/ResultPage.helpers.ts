@@ -392,6 +392,7 @@ export function buildEnhancedZiweiPromptPack(payload: AnalysisPayloadV1, selecte
 
 export function buildBaziZiweiEnhancedPrompt(params: {
   baziResult: BaziChartResult;
+  baziText?: string;
   ziweiText: string;
   question: string;
   questionScene?: BaziQuestionScene;
@@ -403,7 +404,7 @@ export function buildBaziZiweiEnhancedPrompt(params: {
   const questionScene = resolveBaziQuestionScene(params.questionScene);
   const normalizedQuestion =
     params.question.trim() || getBaziDefaultQuestion(questionScene, { isCustomQuestion });
-  const baziText = formatBaziForPrompt(params.baziResult, null, 'general');
+  const baziText = params.baziText || formatBaziForPrompt(params.baziResult, null, 'general');
   const sourceLabels = [params.baziFortuneSummary, params.ziweiScopeSummary]
     .map((item) => item?.trim())
     .filter(Boolean);
@@ -415,23 +416,23 @@ export function buildBaziZiweiEnhancedPrompt(params: {
     '- 先用八字判断长期底色、用神喜忌、结构强弱和当前触发，再用紫微校验对应宫位、四化、三方四正和运限呼应。',
     '- 两套体系结论一致时可以增强结论；出现分歧时必须指出哪一侧证据更强、另一侧对应的条件与待核验点。',
     '- 不得编造资料包没有给出的新盘面事实；允许基于资料包做传统命理推理，但必须标明来自八字原局、岁运、紫微宫位、四化、运限或现实补充信息。',
-    '- 年份、月份、日期或年龄只有写入【增强来源】或对应资料包后，才可作为当前年限运限证据。',
+    '- 年份、月份、日期或年龄只有写入【已选分析对象】或对应资料包后，才可作为当前年限运限依据。',
     '- 不要平均复述两套盘面资料，优先提炼最能回答【问题】的核心证据。',
     '- 使用简体中文，不写空话；证据不足处直接说明。',
     '',
     `【当前时间】\n${formatPromptCurrentTime()}`,
-    sourceLabels.length > 0 ? `【增强来源】\n${sourceLabels.join('\n')}` : '',
+    sourceLabels.length > 0 ? `【已选分析对象】\n${sourceLabels.join('\n')}` : '',
     `【八字排盘信息】\n${baziText}`,
     `【紫微盘面信息】\n${params.ziweiText}`,
     `【问题】\n${normalizedQuestion}`,
     ...(isCustomQuestion
       ? []
       : [
-          `【八字研判框架】\n${buildBaziQuestionGuidanceSection(
+          `【八字分析思路】\n${buildBaziQuestionGuidanceSection(
             questionScene,
             Boolean(params.baziFortuneSummary),
           )}`,
-          '【分析对象优先级】\n如果【增强来源】已写入八字年限或紫微范围，必须优先围绕该对象分析；如果问题中的时间与增强来源不一致，开头先提醒不一致，再以已写入对象为准；应期判断必须说明来自本命底色、阶段运限、年度触发、月度窗口还是日时短期触发。',
+          '【解读范围】\n如果【已选分析对象】已写入八字年限或紫微范围，必须优先围绕该对象分析；如果问题中的时间与已选分析对象不一致，开头先提醒不一致，再以已写入对象为准；应期判断必须说明来自本命底色、阶段运限、年度触发、月度窗口还是日时短期触发。',
           '【任务】\n先用八字判断命局主线、结构强弱、喜忌取用与当前触发，再用紫微校验对应宫位主轴、四化牵动、三方四正和运限落点，最后整合成一致结论、冲突点与现实建议。',
           '【输出要求】\n先直接回答【问题】，再按“八字主线”“紫微校验”“综合结论与建议”展开；每部分都要写明主证、辅证、反证或限制、触发条件与建议；若两套体系存在冲突，单列“冲突点与待核验项”。',
         ]),

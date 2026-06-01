@@ -19,8 +19,14 @@ const validInput: AstrolabeBirthInput = {
 };
 
 test('星盘底层算法应拒绝无效出生日期和时间', () => {
-  assert.throws(() => generateAstrolabe({ ...validInput, year: ' ' }), /星盘需要填写有效的出生年份/);
-  assert.throws(() => generateAstrolabe({ ...validInput, hour: ' ' }), /星盘需要填写有效的出生小时/);
+  assert.throws(
+    () => generateAstrolabe({ ...validInput, year: ' ' }),
+    /星盘需要填写有效的出生年份/,
+  );
+  assert.throws(
+    () => generateAstrolabe({ ...validInput, hour: ' ' }),
+    /星盘需要填写有效的出生小时/,
+  );
   assert.throws(
     () => generateAstrolabe({ ...validInput, year: '1899' }),
     /出生年份需在 1900-2100 之间/,

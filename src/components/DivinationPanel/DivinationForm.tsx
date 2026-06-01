@@ -273,7 +273,7 @@ export function DivinationForm({
 
                     {draft.method === 'liuren' ? (
                       <div className="form-item divination-inline-field">
-                        <label htmlFor="liuren-template-select">断课模板</label>
+                        <label htmlFor="liuren-template-select">断课要点</label>
                         <div className="divination-select-shell divination-desktop-select-shell">
                           <span className="divination-trigger-text">
                             {liurenTemplateLabelMap[draft.liurenTemplate]}
@@ -537,7 +537,7 @@ export function DivinationForm({
                       {liurenTemplateLabelMap[draft.liurenTemplate]}
                     </span>
                     <select
-                      aria-label="断课模板"
+                      aria-label="断课要点"
                       value={draft.liurenTemplate}
                       className="form-input divination-mobile-method-select divination-overlay-select"
                       onChange={(event) =>

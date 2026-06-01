@@ -46,7 +46,7 @@ export function useZiweiCalculations(
     ziweiScope: string;
     ziweiScopeDate: string;
   },
-  _isZiweiTabMounted: boolean,
+  isZiweiTabMounted: boolean,
   isPromptTabMounted: boolean,
   primaryHasUnknownTime: boolean,
   partnerHasUnknownTime: boolean,
@@ -109,9 +109,9 @@ export function useZiweiCalculations(
   const shouldLoadZiweiPromptPayload =
     isPromptTabMounted &&
     (promptState.promptSource === 'ziwei' || promptState.promptSource === 'bazi-ziwei');
-  const shouldWarmZiweiRuntime = Boolean(primaryZiweiInput);
+  const shouldWarmZiweiRuntime = isZiweiTabMounted && Boolean(primaryZiweiInput);
   const shouldWarmPartnerZiweiRuntime =
-    inputState.analysisMode === 'compatibility' && Boolean(partnerZiweiInput);
+    isZiweiTabMounted && inputState.analysisMode === 'compatibility' && Boolean(partnerZiweiInput);
   const primaryZiweiInputKey = useMemo(
     () => (primaryZiweiInput ? JSON.stringify(primaryZiweiInput) : ''),
     [primaryZiweiInput],

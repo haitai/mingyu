@@ -4,6 +4,10 @@ export interface FortunePromptPayload {
   evidenceLines?: string[];
   breakdownTitle?: string;
   breakdownLines?: string[];
+  detailGroups?: Array<{
+    title: string;
+    lines: string[];
+  }>;
 }
 
 export interface FortuneSelectionContext {

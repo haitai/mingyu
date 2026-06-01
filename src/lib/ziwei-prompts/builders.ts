@@ -248,8 +248,8 @@ export function buildEvidenceSummary(
   });
 
   return picked.map((item) => ({
-    证据标题: item.title,
-    作用范围: mapScopeLabel(item.scope),
+    判断线索: item.title,
+    适用范围: mapScopeLabel(item.scope),
     关联宫位: item.palace_names.map((name) => formatPalaceName(name)),
     关联星曜: deriveEvidenceStars(payload, focusPalaces, item),
     关联四化: deriveEvidenceMutagens(payload, focusPalaces, item),
@@ -348,7 +348,7 @@ export function buildScopeHitSummary(payload: AnalysisPayloadV1) {
       level: '应期',
       title: '应期层级',
       detail: `${scopeLabel}只负责${payload.active_scope.label || scopeLabel}这一层级的触发；下层未选择时，只能给条件窗口，不给绝对日期。`,
-      source: '运限解读规则',
+      source: '解读方法',
       weight: 42,
     },
     {

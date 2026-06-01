@@ -10,15 +10,13 @@ test('React 与路由依赖会进入基础 vendor 分块', () => {
   );
 });
 
-test('紫微相关重型依赖会进入 ziwei-engine 分块', () => {
+test('命理核心模块会进入统一计算分块，避免八字与紫微互相引用时产生循环分块', () => {
   assert.equal(getManualChunk('D:/project/node_modules/iztro/lib/index.js'), 'iztro-vendor');
   assert.equal(getManualChunk('D:/project/node_modules/tyme4ts/dist/index.js'), 'tyme-vendor');
-  assert.equal(getManualChunk('D:/project/src/lib/iztro/runtime-helpers.ts'), 'ziwei-core');
-  assert.equal(getManualChunk('D:/project/src/lib/full-chart-engine.ts'), 'ziwei-core');
-});
-
-test('八字相关模块会进入 bazi-engine 分块', () => {
-  assert.equal(getManualChunk('D:/project/src/utils/bazi/baziCalculator.ts'), 'bazi-engine');
+  assert.equal(getManualChunk('D:/project/src/lib/iztro/runtime-helpers.ts'), 'chart-engine');
+  assert.equal(getManualChunk('D:/project/src/lib/full-chart-engine/ziwei.ts'), 'chart-engine');
+  assert.equal(getManualChunk('D:/project/src/lib/full-chart-engine/bazi.ts'), 'chart-engine');
+  assert.equal(getManualChunk('D:/project/src/utils/bazi/baziCalculator.ts'), 'chart-engine');
 });
 
 test('八字运势面板相关模块会进入独立异步分块', () => {
@@ -30,9 +28,12 @@ test('八字运势面板相关模块会进入独立异步分块', () => {
     getManualChunk('D:/project/src/components/BaziFortuneTools/BaziFortuneModal.tsx'),
     'bazi-fortune-ui',
   );
-  assert.equal(getManualChunk('D:/project/src/utils/bazi/calendarTool.ts'), 'bazi-engine');
-  assert.equal(getManualChunk('D:/project/src/utils/bazi/fortuneSelection.ts'), 'bazi-engine');
-  assert.equal(getManualChunk('D:/project/src/utils/bazi/fortuneModalSelection.ts'), 'bazi-engine');
+  assert.equal(getManualChunk('D:/project/src/utils/bazi/calendarTool.ts'), 'chart-engine');
+  assert.equal(getManualChunk('D:/project/src/utils/bazi/fortuneSelection.ts'), 'chart-engine');
+  assert.equal(
+    getManualChunk('D:/project/src/utils/bazi/fortuneModalSelection.ts'),
+    'chart-engine',
+  );
 });
 
 test('提示词生成模块会进入 prompt-engine 分块', () => {

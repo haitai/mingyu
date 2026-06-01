@@ -305,12 +305,17 @@ export function ResultPage() {
   const deferredBaziQuickQuestion = useDeferredValue(effectiveBaziQuickQuestion);
   const deferredZiweiQuickQuestion = useDeferredValue(effectiveZiweiQuickQuestion);
   const deferredAstrolabeQuestion = useDeferredValue(effectiveAstrolabeQuickQuestion);
+  const shouldCalculateAstrolabe =
+    hasAstrolabeChart &&
+    (mountedTabs.astrolabe ||
+      (promptState.tab === 'prompt' && isAstrolabePromptSource) ||
+      isAstrolabeScopeModalOpen);
 
   const astrolabeCalculation = useMemo<{
     data: AstrolabeData | null;
     error: string;
   }>(() => {
-    if (!hasAstrolabeChart) {
+    if (!shouldCalculateAstrolabe) {
       return { data: null, error: '' };
     }
 
@@ -357,7 +362,7 @@ export function ResultPage() {
     inputState.name,
     inputState.useTrueSolarTime,
     inputState.year,
-    hasAstrolabeChart,
+    shouldCalculateAstrolabe,
   ]);
   const astrolabeScopeContext = useMemo(
     () =>
@@ -474,16 +479,41 @@ export function ResultPage() {
           promptState.ziweiScopeDate ? currentZiweiPayload?.active_scope.label : undefined,
         );
 
-  function computeEnhancedPromptText(question: string, finalQuestion: string): string {
-    if (promptState.tab !== 'prompt' || inputState.analysisMode !== 'single') return '';
-    if (primaryHasUnknownTime || !baziResult || !currentZiweiPayload) return '';
+  const enhancedZiweiPromptPack = useMemo(() => {
+    if (
+      promptState.tab !== 'prompt' ||
+      promptState.promptSource !== 'bazi-ziwei' ||
+      !currentZiweiPayload
+    ) {
+      return '';
+    }
 
     const ziweiTopic = resolveZiweiTopicByBaziQuestionScene(activeBaziQuestionScene);
-    const ziweiText = buildEnhancedZiweiPromptPack(currentZiweiPayload, ziweiTopic);
+    return buildEnhancedZiweiPromptPack(currentZiweiPayload, ziweiTopic);
+  }, [activeBaziQuestionScene, currentZiweiPayload, promptState.promptSource, promptState.tab]);
+
+  const enhancedBaziPromptPack = useMemo(() => {
+    if (
+      promptState.tab !== 'prompt' ||
+      promptState.promptSource !== 'bazi-ziwei' ||
+      primaryHasUnknownTime ||
+      !baziResult
+    ) {
+      return '';
+    }
+
+    return formatBaziForPrompt(baziResult, null, 'general');
+  }, [baziResult, primaryHasUnknownTime, promptState.promptSource, promptState.tab]);
+
+  function computeEnhancedPromptText(question: string, finalQuestion: string): string {
+    if (promptState.tab !== 'prompt' || inputState.analysisMode !== 'single') return '';
+    if (primaryHasUnknownTime || !baziResult || !enhancedZiweiPromptPack || !enhancedBaziPromptPack)
+      return '';
 
     return buildBaziZiweiEnhancedPrompt({
       baziResult,
-      ziweiText,
+      baziText: enhancedBaziPromptPack,
+      ziweiText: enhancedZiweiPromptPack,
       question: finalQuestion || question,
       questionScene: activeBaziQuestionScene,
       baziFortuneSummary: baziFortuneContext
@@ -511,7 +541,10 @@ export function ResultPage() {
   }, [baziFortuneContext, defaultBaziQuestion, deferredBaziQuickQuestion]);
 
   const latestBaziPromptText = useMemo(
-    () => computeBaziPromptText(effectiveBaziQuickQuestion, finalBaziQuestion),
+    () =>
+      promptState.promptSource === 'bazi'
+        ? computeBaziPromptText(effectiveBaziQuickQuestion, finalBaziQuestion)
+        : '',
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       baziFortuneContext,
@@ -531,12 +564,26 @@ export function ResultPage() {
       promptEngine,
       promptState.baziPresetId,
       promptState.baziQuestionScene,
+      promptState.promptSource,
       promptState.tab,
       selectedBaziPreset,
     ],
   );
   const previewBaziPromptText = useMemo(
-    () => computeBaziPromptText(deferredBaziQuickQuestion, deferredFinalBaziQuestion),
+    () => {
+      if (promptState.promptSource !== 'bazi') {
+        return '';
+      }
+
+      if (
+        deferredBaziQuickQuestion === effectiveBaziQuickQuestion &&
+        deferredFinalBaziQuestion === finalBaziQuestion
+      ) {
+        return latestBaziPromptText;
+      }
+
+      return computeBaziPromptText(deferredBaziQuickQuestion, deferredFinalBaziQuestion);
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       baziFortuneContext,
@@ -545,9 +592,12 @@ export function ResultPage() {
       activeBaziShortcutMode,
       deferredBaziQuickQuestion,
       deferredFinalBaziQuestion,
+      effectiveBaziQuickQuestion,
+      finalBaziQuestion,
       inputState.analysisMode,
       inputState.name,
       inputState.partnerName,
+      latestBaziPromptText,
       partnerBaziResult,
       partnerHasUnknownTime,
       partnerThreePillarsState.profile,
@@ -556,13 +606,17 @@ export function ResultPage() {
       promptEngine,
       promptState.baziPresetId,
       promptState.baziQuestionScene,
+      promptState.promptSource,
       promptState.tab,
       selectedBaziPreset,
     ],
   );
 
   const latestZiweiPromptText = useMemo(
-    () => computeZiweiPromptText(effectiveZiweiQuickQuestion),
+    () =>
+      promptState.promptSource === 'ziwei'
+        ? computeZiweiPromptText(effectiveZiweiQuickQuestion)
+        : '',
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       currentZiweiPayload,
@@ -570,26 +624,44 @@ export function ResultPage() {
       effectiveZiweiQuickQuestion,
       inputState.analysisMode,
       partnerZiweiPayload,
+      promptState.promptSource,
       promptState.tab,
       promptState.ziweiTopic,
     ],
   );
   const previewZiweiPromptText = useMemo(
-    () => computeZiweiPromptText(deferredZiweiQuickQuestion),
+    () => {
+      if (promptState.promptSource !== 'ziwei') {
+        return '';
+      }
+
+      if (deferredZiweiQuickQuestion === effectiveZiweiQuickQuestion) {
+        return latestZiweiPromptText;
+      }
+
+      return computeZiweiPromptText(deferredZiweiQuickQuestion);
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       currentZiweiPayload,
       activeZiweiShortcutMode,
       deferredZiweiQuickQuestion,
+      effectiveZiweiQuickQuestion,
       inputState.analysisMode,
+      latestZiweiPromptText,
       partnerZiweiPayload,
+      promptState.promptSource,
       promptState.tab,
       promptState.ziweiTopic,
     ],
   );
 
   const latestAstrolabePromptText = useMemo(() => {
-    if (promptState.tab !== 'prompt' || !astrolabeCalculation.data) {
+    if (
+      promptState.promptSource !== 'astrolabe' ||
+      promptState.tab !== 'prompt' ||
+      !astrolabeCalculation.data
+    ) {
       return '';
     }
 
@@ -610,9 +682,18 @@ export function ResultPage() {
     astrolabeCalculation.data,
     effectiveAstrolabeQuickQuestion,
     promptState.astrolabeTopic,
+    promptState.promptSource,
     promptState.tab,
   ]);
   const previewAstrolabePromptText = useMemo(() => {
+    if (promptState.promptSource !== 'astrolabe') {
+      return '';
+    }
+
+    if (deferredAstrolabeQuestion === effectiveAstrolabeQuickQuestion) {
+      return latestAstrolabePromptText;
+    }
+
     if (promptState.tab !== 'prompt' || !astrolabeCalculation.data) {
       return '';
     }
@@ -633,40 +714,66 @@ export function ResultPage() {
     astrolabeScopeContext.promptText,
     astrolabeCalculation.data,
     deferredAstrolabeQuestion,
+    effectiveAstrolabeQuickQuestion,
+    latestAstrolabePromptText,
     promptState.astrolabeTopic,
+    promptState.promptSource,
     promptState.tab,
   ]);
   const latestEnhancedPromptText = useMemo(
-    () => computeEnhancedPromptText(effectiveBaziQuickQuestion, finalBaziQuestion),
+    () =>
+      promptState.promptSource === 'bazi-ziwei'
+        ? computeEnhancedPromptText(effectiveBaziQuickQuestion, finalBaziQuestion)
+        : '',
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       activeBaziQuestionScene,
       activeBaziShortcutMode,
       baziFortuneContext,
       baziResult,
-      currentZiweiPayload,
+      enhancedBaziPromptPack,
       effectiveBaziQuickQuestion,
+      enhancedZiweiPromptPack,
       finalBaziQuestion,
       inputState.analysisMode,
       primaryHasUnknownTime,
+      promptState.promptSource,
       promptState.tab,
       promptState.ziweiScope,
       ziweiScopeSummaryText,
     ],
   );
   const previewEnhancedPromptText = useMemo(
-    () => computeEnhancedPromptText(deferredBaziQuickQuestion, deferredFinalBaziQuestion),
+    () => {
+      if (promptState.promptSource !== 'bazi-ziwei') {
+        return '';
+      }
+
+      if (
+        deferredBaziQuickQuestion === effectiveBaziQuickQuestion &&
+        deferredFinalBaziQuestion === finalBaziQuestion
+      ) {
+        return latestEnhancedPromptText;
+      }
+
+      return computeEnhancedPromptText(deferredBaziQuickQuestion, deferredFinalBaziQuestion);
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       activeBaziQuestionScene,
       activeBaziShortcutMode,
       baziFortuneContext,
       baziResult,
-      currentZiweiPayload,
       deferredBaziQuickQuestion,
       deferredFinalBaziQuestion,
+      effectiveBaziQuickQuestion,
+      enhancedBaziPromptPack,
+      enhancedZiweiPromptPack,
+      finalBaziQuestion,
       inputState.analysisMode,
+      latestEnhancedPromptText,
       primaryHasUnknownTime,
+      promptState.promptSource,
       promptState.tab,
       promptState.ziweiScope,
       ziweiScopeSummaryText,
@@ -901,7 +1008,7 @@ export function ResultPage() {
                     <p>
                       {hasAstrolabeChart
                         ? '选择星盘解读重点，生成可复制给 AI 的提示词。'
-                        : '选择基于八字、紫微或八字+紫微增强来源，再用快捷按钮生成问题。'}
+                        : '选择基于八字、紫微或八字+紫微的已选分析对象，再用快捷按钮生成问题。'}
                     </p>
                   </div>
                 </div>

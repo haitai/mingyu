@@ -247,7 +247,7 @@ export function buildDivinationPrompt(
       ].join('\n')
     : method === 'liuren'
       ? [
-          '先直接回答【问题】，再按【断课模板】或主线顺序展开起因、过程、结果与行动建议。',
+          '先直接回答【问题】，再按【断课要点】或主线顺序展开起因、过程、结果与行动建议。',
           '每一段都要写明对应的课传依据、触发条件与现实建议。',
           '每一段都要区分主证、辅证、反证或限制；应期必须来自课传、空亡、三传演变或神煞触发，不得随口给日期。',
           '如果信息不足或存在不确定性，需要明确说明，不要强行下绝对判断。',
@@ -275,15 +275,15 @@ export function buildDivinationPrompt(
         ].join('\n');
   const liurenTemplateSection =
     method === 'liuren'
-      ? buildSection('【断课模板】', buildLiurenTemplateText(liurenTemplate, data as LiurenData))
+      ? buildSection('【断课要点】', buildLiurenTemplateText(liurenTemplate, data as LiurenData))
       : '';
   const liuyaoTemplateSection =
     method === 'liuyao'
-      ? buildSection('【断卦模板】', buildLiuyaoTemplateText(liuyaoTemplate, question))
+      ? buildSection('【断卦要点】', buildLiuyaoTemplateText(liuyaoTemplate, question))
       : '';
   const astrolabeGuidanceSection =
     method === 'astrolabe' && !isCustomQuestion
-      ? buildSection('【分析框架】', buildAstrolabeTopicGuidanceSection(astrolabeTopic))
+      ? buildSection('【分析思路】', buildAstrolabeTopicGuidanceSection(astrolabeTopic))
       : '';
   const astrolabeTransitScaleSection =
     method === 'astrolabe' && !isCustomQuestion
@@ -294,12 +294,12 @@ export function buildDivinationPrompt(
       : '';
   const timingBoundarySection =
     method !== 'astrolabe' && !isCustomQuestion
-      ? buildSection('【应期与边界规则】', buildDivinationTimingBoundaryText(method))
+      ? buildSection('【应期判断方法】', buildDivinationTimingBoundaryText(method))
       : '';
   const divinationFocusGuidanceSection = isCustomQuestion
     ? ''
     : buildSection(
-        '【分析框架】',
+        '【分析思路】',
         buildDivinationFocusGuidanceText(method, meihuaFocus, xiaoliurenFocus, qimenFocus),
       );
   const taskText =
