@@ -64,7 +64,13 @@ const REQUIRED_SAMPLE_FIELDS: RequiredSampleFields[] = [
   },
   {
     sampleName: '星盘',
-    requiredFields: ['【分析对象】', '行运证据', '技术限制', '未计算太阳返照'],
+    requiredFields: [
+      '【分析对象】',
+      '行运证据',
+      '资料范围',
+      '不包含太阳返照、次限推进、太阳弧',
+      '时间边界',
+    ],
   },
   {
     sampleName: '六爻',
@@ -80,7 +86,14 @@ const REQUIRED_SAMPLE_FIELDS: RequiredSampleFields[] = [
   },
   {
     sampleName: '大六壬',
-    requiredFields: ['发用主线', '类神取用', '四课背景', '三传演变', '空亡应期'],
+    requiredFields: [
+      '【排盘信息】',
+      '取证顺序',
+      '发用',
+      '三传推进',
+      '四课背景',
+      '应期只能写课传支持的触发条件',
+    ],
   },
   {
     sampleName: '小六壬',
