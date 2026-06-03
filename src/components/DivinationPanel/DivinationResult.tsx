@@ -205,7 +205,9 @@ function LiurenBoard({ data }: { data: LiurenData }) {
       </div>
 
       <div className="liuren-reference-strip">
-        <span>月将{data.monthLeader}加{data.divinationBranch}</span>
+        <span>
+          月将{data.monthLeader}加{data.divinationBranch}
+        </span>
         <span>三传：{transmissionText || '未生成'}</span>
         <span>
           {data.transmissionRule || '取传未标注'}
