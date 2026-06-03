@@ -312,7 +312,7 @@ export function buildScopeHitSummary(payload: AnalysisPayloadV1) {
   );
   const focusLine = currentPalace
     ? `${payload.active_scope.label || scopeLabel}当前落宫为本命${formatPalaceName(currentPalace.name)}。`
-    : `${payload.active_scope.label || scopeLabel}未写入明确落宫，只能引用已给出的运限四化与证据池。`;
+    : `${payload.active_scope.label || scopeLabel}未提供明确落宫，只能引用已给出的运限四化与关键线索。`;
   const items: PromptEvidenceItem[] = [
     {
       level: '主证',
@@ -355,7 +355,7 @@ export function buildScopeHitSummary(payload: AnalysisPayloadV1) {
       level: '限制',
       title: '本命与运限边界',
       detail: '本命宫位定长期底色，当前运限只说明阶段触发；不得把短期触发写成一生命定。',
-      source: '提示词规则',
+      source: '解读边界',
       weight: 20,
     },
   );

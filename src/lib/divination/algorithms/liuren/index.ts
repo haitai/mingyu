@@ -1,14 +1,18 @@
-import type { LiurenData, LiurenLesson, LiurenTransmission } from '../../../../types/divination';
+import type { LiurenData, LiurenTransmission } from '../../../../types/divination';
 import { getDivinationTime } from '../../../../utils/timeManager.ts';
 import { getVoidBranches } from '../../../../utils/lunar.ts';
+import { SolarTerm, SolarTime } from 'tyme4ts';
 import {
   buildHeavenlyPlate,
+  DIZHI,
   describeRelation,
+  getDayStemResidence,
   getNoblemanBranch,
   getPlateItemByBranch,
   getUpperByUnder,
 } from './helpers/plate';
-import { buildLessonNote, resolveInitialTransmission } from './helpers/lessons';
+import { buildFourLessons, resolveInitialTransmission } from './helpers/lessons';
+import { resolveLiurenClassicalRules } from './helpers/classical-rules';
 import {
   buildTransmissionDetail,
   buildTransmissionNote,
@@ -16,42 +20,58 @@ import {
   getTransmissionPattern,
 } from './helpers/transmission';
 
-const MONTH_LEADER_MAP: Record<string, string> = {
-  寅: '亥',
-  卯: '戌',
-  辰: '酉',
-  巳: '申',
-  午: '未',
-  未: '午',
-  申: '巳',
-  酉: '辰',
-  戌: '卯',
-  亥: '寅',
-  子: '丑',
-  丑: '子',
-};
-const DAY_STEM_RESIDENCE_MAP: Record<string, string> = {
-  甲: '寅',
-  乙: '辰',
-  丙: '巳',
-  丁: '未',
-  戊: '巳',
-  己: '未',
-  庚: '申',
-  辛: '戌',
-  壬: '亥',
-  癸: '丑',
+const MONTH_LEADER_BY_ZHONGQI: Record<string, string> = {
+  雨水: '亥',
+  春分: '戌',
+  谷雨: '酉',
+  小满: '申',
+  夏至: '未',
+  大暑: '午',
+  处暑: '巳',
+  秋分: '辰',
+  霜降: '卯',
+  小雪: '寅',
+  冬至: '丑',
+  大寒: '子',
 };
 const DAYTIME_BRANCHES = new Set(['卯', '辰', '巳', '午', '未', '申']);
 
+function getMonthLeaderByZhongqi(timeInfo: ReturnType<typeof getDivinationTime>['timeInfo']) {
+  const currentTime = SolarTime.fromYmdHms(
+    timeInfo.solar.year,
+    timeInfo.solar.month,
+    timeInfo.solar.day,
+    timeInfo.solar.hour,
+    timeInfo.solar.minute,
+    0,
+  );
+  const currentJulianDay = currentTime.getJulianDay().getDay();
+  const year = timeInfo.solar.year;
+  let activeZhongqi = '冬至';
+  let activeJulianDay = Number.NEGATIVE_INFINITY;
+
+  for (const scanYear of [year - 1, year, year + 1]) {
+    for (let termIndex = 0; termIndex < 24; termIndex += 2) {
+      const term = SolarTerm.fromIndex(scanYear, termIndex);
+      const termJulianDay = term.getJulianDay().getDay();
+      if (termJulianDay <= currentJulianDay && termJulianDay > activeJulianDay) {
+        activeJulianDay = termJulianDay;
+        activeZhongqi = term.getName();
+      }
+    }
+  }
+
+  return MONTH_LEADER_BY_ZHONGQI[activeZhongqi] || '丑';
+}
+
 export function generateLiuren(customDate?: Date): LiurenData {
   const { ganzhi, timeInfo, timestamp } = getDivinationTime(customDate);
-  const monthBranch = ganzhi.month.charAt(1);
   const dayStem = ganzhi.day.charAt(0);
   const dayBranch = ganzhi.day.charAt(1);
+  const hourStem = ganzhi.hour.charAt(0);
   const hourBranch = ganzhi.hour.charAt(1);
   const dayNight: '昼占' | '夜占' = DAYTIME_BRANCHES.has(hourBranch) ? '昼占' : '夜占';
-  const monthLeader = MONTH_LEADER_MAP[monthBranch] || '亥';
+  const monthLeader = getMonthLeaderByZhongqi(timeInfo);
   const noblemanBranch = getNoblemanBranch(dayStem, dayNight);
   const xunKong = getVoidBranches(ganzhi.day);
   const dayOfficer = '贵人';
@@ -62,37 +82,21 @@ export function generateLiuren(customDate?: Date): LiurenData {
     dayNight,
   });
 
-  const dayStemResidence = DAY_STEM_RESIDENCE_MAP[dayStem] || dayBranch;
-  const yiKeUpper = getUpperByUnder(heavenlyPlate, dayStemResidence);
-  const erKeUpper = getUpperByUnder(heavenlyPlate, yiKeUpper);
-  const sanKeUpper = getUpperByUnder(heavenlyPlate, dayBranch);
-  const siKeUpper = getUpperByUnder(heavenlyPlate, sanKeUpper);
-  const lessonNames: LiurenLesson['name'][] = ['一课', '二课', '三课', '四课'];
-  const lessonPairs: Array<{ upper: string; lower: string }> = [
-    { upper: yiKeUpper, lower: dayStemResidence },
-    { upper: erKeUpper, lower: yiKeUpper },
-    { upper: sanKeUpper, lower: dayBranch },
-    { upper: siKeUpper, lower: sanKeUpper },
-  ];
-
-  const fourLessons = lessonPairs.map((item, index) => {
-    const relation = describeRelation(item.upper, item.lower);
-    const god = getPlateItemByBranch(heavenlyPlate, item.upper).god;
-
-    return {
-      name: lessonNames[index],
-      upper: item.upper,
-      lower: item.lower,
-      god,
-      relation,
-      note: buildLessonNote(relation, xunKong, item.upper, item.lower),
-    };
-  }) satisfies LiurenLesson[];
+  const dayStemResidence = getDayStemResidence(dayStem, dayBranch);
+  const fourLessons = buildFourLessons({
+    heavenlyPlate,
+    dayStem,
+    dayBranch,
+    dayStemResidence,
+    xunKong,
+  });
 
   const initialResult = resolveInitialTransmission(fourLessons, {
     dayStem,
     dayBranch,
     dayStemResidence,
+    hourStem,
+    hourBranch,
     heavenlyPlate,
   });
   const chu = initialResult.initial;
@@ -119,11 +123,13 @@ export function generateLiuren(customDate?: Date): LiurenData {
       note: buildTransmissionNote(transmissionStages[index], relation),
     };
   }) satisfies LiurenTransmission[];
+  const classicalRules = resolveLiurenClassicalRules(initialResult.rule);
 
   const transmissionDetail = buildTransmissionDetail(
     initialResult.rule,
     transmissionPattern,
     threeTransmissions,
+    classicalRules[0],
   );
 
   const patternTags = [
@@ -152,10 +158,13 @@ export function generateLiuren(customDate?: Date): LiurenData {
     transmissionRule: initialResult.rule,
     transmissionPattern,
     transmissionDetail,
+    earthlyPlate: [...DIZHI],
+    dayStemResidence,
     heavenlyPlate,
     fourLessons,
     threeTransmissions,
     patternTags,
+    classicalRules,
     lessonSummary: `${lessonSummary} 当前节气为${timeInfo.jieQi}。`,
     transmissionSummary,
   };

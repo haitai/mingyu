@@ -31,19 +31,13 @@ export function buildLiurenTemplateText(template: LiurenTemplateType, data: Liur
     general: '核心目标、现实阻力、下一步动作（先做什么）。',
   };
   const chu = data.threeTransmissions[0];
-  const zhong = data.threeTransmissions[1];
-  const mo = data.threeTransmissions[2];
+  const classicalRule = data.classicalRules?.[0];
 
   return [
-    `断课类型：${templateLabelMap[template]}`,
-    `断课重点：${templateFocusMap[template]}`,
+    `分析类型：${templateLabelMap[template]}`,
+    `关注重点：${templateFocusMap[template]}`,
     getLiurenPatternHint(data.transmissionPattern),
-    `主线证据：先以${chu ? `${chu.branch}乘${chu.god}` : '初传'}定发用主线，再结合${data.transmissionRule || '取传法'}、${data.transmissionPattern || '传态'}与旬空${data.xunKong?.join('、') || '未知'}判断节奏。`,
-    '取证顺序：四课三传为主证，课体与神煞为辅证；若辅证与三传主线冲突，先以发用与三传演变为准。',
-    '建议展开顺序：',
-    `1. 起因判断：围绕初传${chu ? `${chu.branch}（${chu.relation}）` : '未知'}，交代事件为何起。`,
-    `2. 过程判断：围绕中传${zhong ? `${zhong.branch}（${zhong.relation}）` : '未知'}，交代主要卡点与转折。`,
-    `3. 结果判断：围绕末传${mo ? `${mo.branch}（${mo.relation}）` : '未知'}，交代短期落点与走势。`,
-    '4. 行动建议：给出一条可立即执行的动作和一条必须回避的风险。',
+    `取证顺序：先按${classicalRule?.rule || '取传法'}看发用${chu ? `${chu.branch}乘${chu.god}` : '初传'}，再看三传推进，四课看背景，课体神煞只作辅证。`,
+    '回答格式：先给结论，再列 2 到 4 条关键依据和建议；不要复述完整课盘。',
   ].join('\n');
 }

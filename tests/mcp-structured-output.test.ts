@@ -118,7 +118,7 @@ const promptToolCalls: Array<[string, Record<string, unknown>, RegExp]> = [
       liurenTemplate: 'shiye',
       question: '今年事业如何？',
     },
-    /【占卜信息】/,
+    /【排盘信息】/,
   ],
   ['tarot_prompt', { spreadType: 'single', question: '今年事业如何？' }, /【占卜信息】/],
   ['ssgw_prompt', { question: '今年事业如何？' }, /【占卜信息】/],
@@ -284,7 +284,7 @@ test('MCP 星盘提示词应透传分析对象文本', async () => {
     assert.match(prompt, /【行运时间尺度】/);
     assert.match(
       prompt,
-      /当前已写入【分析对象】：必须以用户选择的本命、流年、流月或流日作为本次回答主范围/,
+      /【分析对象】已经给出本命、流年、流月或流日范围时，必须以该范围作为本次回答主范围/,
     );
   });
 });
@@ -894,7 +894,7 @@ test('MCP 六爻与大六壬提示词工具应区分专项模板字段', async (
       },
     });
     assert.equal(liurenResult.isError, undefined, 'liuren_prompt 不应返回错误');
-    assert.match(String(liurenResult.structuredContent?.prompt), /【断课要点】/);
-    assert.match(String(liurenResult.structuredContent?.prompt), /断课类型：事业断课/);
+    assert.match(String(liurenResult.structuredContent?.prompt), /【分析思路】/);
+    assert.match(String(liurenResult.structuredContent?.prompt), /分析类型：事业断课/);
   });
 });

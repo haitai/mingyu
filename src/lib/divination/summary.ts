@@ -177,6 +177,28 @@ function formatLiurenFocusSummary(data: DivinationData) {
   return `发用：初传${detailParts.join('，')}`;
 }
 
+function formatLiurenLessonShortSummary(data: DivinationData) {
+  if (!('fourLessons' in data) || !data.fourLessons?.length) {
+    return '四课关系：未标注';
+  }
+
+  return `四课关系：${data.fourLessons
+    .map((item) => `${item.name}${item.upper}/${item.lower} ${item.relation}`)
+    .join('；')}`;
+}
+
+function formatLiurenTransmissionShortSummary(data: DivinationData) {
+  if (!('threeTransmissions' in data) || !data.threeTransmissions?.length) {
+    return '三传主线：未标注';
+  }
+
+  const stageFallback = ['初传', '中传', '末传'];
+
+  return `三传主线：${data.threeTransmissions
+    .map((item, index) => `${item.stage || stageFallback[index] || '传'}${item.branch}`)
+    .join(' → ')}`;
+}
+
 function formatTarotFocusSummary(data: TarotData) {
   if (!data.cards.length) {
     return '';
@@ -291,18 +313,24 @@ export function getDivinationSummaryBlocks(
         lines: [
           wrapMainEvidence(formatLiurenFocusSummary(data)),
           `贵人落地：${'noblemanBranch' in data && data.noblemanBranch ? data.noblemanBranch : '未知'}`,
+          `日干寄宫：${'dayStemResidence' in data && data.dayStemResidence ? `${data.ganzhi.day.charAt(0)}寄${data.dayStemResidence}` : '未知'}`,
           `旬空：${'xunKong' in data && data.xunKong?.length ? data.xunKong.join('、') : '未知'}`,
           `取传法：${'transmissionRule' in data && data.transmissionRule ? data.transmissionRule : '未标注'}`,
+          `古籍依据：${
+            'classicalRules' in data && data.classicalRules?.length
+              ? data.classicalRules
+                  .map((item) => `${item.source}之${item.rule}：${item.summary}`)
+                  .join('；')
+              : '未标注'
+          }`,
           `传态：${'transmissionPattern' in data && data.transmissionPattern ? data.transmissionPattern : '未标注'}`,
+          formatLiurenLessonShortSummary(data),
+          formatLiurenTransmissionShortSummary(data),
           `课体标签：${'patternTags' in data && data.patternTags?.length ? data.patternTags.join('、') : '无明显标签'}`,
           `课体：${'guaTi' in data && data.guaTi?.length ? data.guaTi.join('、') : '无'}`,
           `神煞：${'shenShaSummary' in data && data.shenShaSummary?.length ? data.shenShaSummary.join('；') : '无'}`,
           'transmissionDetail' in data && data.transmissionDetail
             ? `取传说明：${data.transmissionDetail}`
-            : '',
-          'lessonSummary' in data && data.lessonSummary ? `四课：${data.lessonSummary}` : '',
-          'transmissionSummary' in data && data.transmissionSummary
-            ? `三传：${data.transmissionSummary}`
             : '',
         ].filter(Boolean),
       };

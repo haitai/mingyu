@@ -1,8 +1,13 @@
 import type { LiurenPlateItem } from '../../../../../types/divination';
-import { EARTHLY_BRANCHES } from '../../../../../utils/bazi/baziMappingsData';
+import {
+  BASIC_MAPPINGS,
+  EARTHLY_BRANCHES,
+  HEAVENLY_STEMS,
+} from '../../../../../utils/bazi/baziMappingsData';
 import { BRANCH_WUXING, getBranchIndex, isKe, isSheng } from '../../_shared';
 
 export const DIZHI = EARTHLY_BRANCHES;
+export const TIANGAN = HEAVENLY_STEMS;
 export const TIANJIANG = [
   '贵人',
   '螣蛇',
@@ -26,14 +31,27 @@ export const GUIREN_BRANCH_BY_STEM: Record<string, { day: string; night: string 
   己: { day: '子', night: '申' },
   丙: { day: '亥', night: '酉' },
   丁: { day: '亥', night: '酉' },
-  壬: { day: '卯', night: '巳' },
-  癸: { day: '卯', night: '巳' },
+  壬: { day: '巳', night: '卯' },
+  癸: { day: '巳', night: '卯' },
   辛: { day: '午', night: '寅' },
+};
+const REVERSE_GENERAL_GROUND_BRANCHES = new Set(['巳', '午', '未', '申', '酉', '戌']);
+export const DAY_STEM_RESIDENCE_MAP: Record<string, string> = {
+  甲: '寅',
+  乙: '辰',
+  丙: '巳',
+  丁: '未',
+  戊: '巳',
+  己: '未',
+  庚: '申',
+  辛: '戌',
+  壬: '亥',
+  癸: '丑',
 };
 
 export function describeRelation(sourceBranch: string, targetBranch: string) {
-  const sourceElement = BRANCH_WUXING[sourceBranch] || '';
-  const targetElement = BRANCH_WUXING[targetBranch] || '';
+  const sourceElement = getGanZhiWuxing(sourceBranch);
+  const targetElement = getGanZhiWuxing(targetBranch);
 
   if (!sourceElement || !targetElement) {
     return '关系待定';
@@ -57,9 +75,18 @@ export function describeRelation(sourceBranch: string, targetBranch: string) {
   return `${sourceElement}与${targetElement}杂见`;
 }
 
+export function getGanZhiWuxing(value: string) {
+  const stemIndex = TIANGAN.indexOf(value as (typeof TIANGAN)[number]);
+  if (stemIndex >= 0) {
+    return BASIC_MAPPINGS.STEM_WUXING[stemIndex] || '';
+  }
+
+  return BRANCH_WUXING[value] || '';
+}
+
 export function isBranchKe(sourceBranch: string, targetBranch: string) {
-  const sourceElement = BRANCH_WUXING[sourceBranch] || '';
-  const targetElement = BRANCH_WUXING[targetBranch] || '';
+  const sourceElement = getGanZhiWuxing(sourceBranch);
+  const targetElement = getGanZhiWuxing(targetBranch);
   if (!sourceElement || !targetElement) {
     return false;
   }
@@ -107,21 +134,27 @@ export function buildHeavenlyPlate(args: {
     god: '',
   })) satisfies LiurenPlateItem[];
 
-  const byUnderGod = new Map<string, string>();
-  const noblemanUnderIndex = getBranchIndex(args.noblemanBranch);
-  const direction = args.dayNight === '昼占' ? 1 : -1;
+  const byUpperGod = new Map<string, string>();
+  const noblemanGroundBranch = getUnderByUpper(basePlate, args.noblemanBranch);
+  const isReverseGeneral = REVERSE_GENERAL_GROUND_BRANCHES.has(noblemanGroundBranch);
+  const noblemanBranchIndex = getBranchIndex(args.noblemanBranch);
 
   for (let step = 0; step < DIZHI.length; step += 1) {
-    const underIndex = (noblemanUnderIndex + direction * step + DIZHI.length * 2) % DIZHI.length;
-    byUnderGod.set(DIZHI[underIndex], TIANJIANG[step]);
+    const branchIndex = (noblemanBranchIndex + step + DIZHI.length) % DIZHI.length;
+    const godIndex = isReverseGeneral ? (DIZHI.length - step) % DIZHI.length : step;
+    byUpperGod.set(DIZHI[branchIndex], TIANJIANG[godIndex]);
   }
 
   return basePlate.map((item) => ({
     ...item,
-    god: byUnderGod.get(item.under) || '贵人',
+    god: byUpperGod.get(item.branch) || '贵人',
   }));
 }
 
 export function getPlateItemByBranch(plate: LiurenPlateItem[], branch: string) {
   return plate.find((item) => item.branch === branch) || plate[0];
+}
+
+export function getDayStemResidence(dayStem: string, fallbackBranch: string) {
+  return DAY_STEM_RESIDENCE_MAP[dayStem] || fallbackBranch;
 }

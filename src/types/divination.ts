@@ -364,6 +364,13 @@ export interface LiurenTransmission {
   note: string;
 }
 
+export interface LiurenClassicalRule {
+  source: string;
+  rule: string;
+  category: string;
+  summary: string;
+}
+
 export interface LiurenData {
   ganzhi: BaseGanZhi;
   timestamp: number;
@@ -376,10 +383,13 @@ export interface LiurenData {
   transmissionRule?: string;
   transmissionPattern?: '伏吟' | '反吟' | '回环' | '递传';
   transmissionDetail?: string;
+  earthlyPlate?: string[];
+  dayStemResidence?: string;
   heavenlyPlate: LiurenPlateItem[];
   fourLessons: LiurenLesson[];
   threeTransmissions: LiurenTransmission[];
   patternTags?: string[];
+  classicalRules?: LiurenClassicalRule[];
   lessonSummary?: string;
   transmissionSummary?: string;
   guaTi?: string[];

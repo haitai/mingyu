@@ -1,4 +1,8 @@
-import type { LiurenData, LiurenTransmission } from '../../../../../types/divination';
+import type {
+  LiurenClassicalRule,
+  LiurenData,
+  LiurenTransmission,
+} from '../../../../../types/divination';
 
 const LIUCHONG_MAP: Record<string, string> = {
   子: '午',
@@ -71,10 +75,14 @@ export function buildTransmissionDetail(
   rule: string,
   _pattern: LiurenData['transmissionPattern'],
   transmissions: LiurenTransmission[],
+  classicalRule?: LiurenClassicalRule,
 ) {
   const initialTransmission = transmissions[0];
   if (!initialTransmission) {
     throw new Error('buildTransmissionDetail 需要至少包含初传信息。');
   }
-  return `取传采用${rule}，以${initialTransmission.stage}${initialTransmission.branch}为初传发用。`;
+  const sourceText = classicalRule
+    ? `；古籍依据按${classicalRule.source}之${classicalRule.rule}，${classicalRule.summary}`
+    : '';
+  return `取传采用${rule}，以${initialTransmission.stage}${initialTransmission.branch}为初传发用${sourceText}。`;
 }

@@ -119,8 +119,8 @@ const TRANSITING_BODIES = [
   CelestialBody.Moon,
 ];
 
-const ASTROLABE_UNCOMPUTED_TECH_LIMIT =
-  '技术限制：当前项目可写入本命盘结构、本命宫主星链条，并在选择流年、流月或流日时写入行运行星对本命点的主要相位和行运落本命宫位；未计算太阳返照、次限推进、太阳弧、返照宫位、主限或法达，不得把这些未写入技术当作证据。';
+const ASTROLABE_EVIDENCE_SCOPE_NOTE =
+  '资料范围：本任务书提供本命盘结构、本命宫主星链条，以及所选流年、流月或流日的主要行运相位和行运落本命宫位；不包含太阳返照、次限推进、太阳弧、返照宫位、主限或法达资料，因此不得把这些项目当作判断依据。';
 
 function parseDateParts(dateStr: string) {
   const matched = /^(\d{4})(?:-(\d{1,2}))?(?:-(\d{1,2}))?$/.exec(dateStr.trim());
@@ -333,12 +333,12 @@ function buildHouseRulerChainEvidence(data: AstrolabeData) {
       const primaryLabel = CELESTIAL_BODY_LABELS[ruler.primary] ?? ruler.primary;
       const primaryText = primary
         ? `${primaryLabel}落本命第${primary.house}宫${primary.formatted}${primary.retrograde ? '逆行' : ''}`
-        : `${primaryLabel}未写入落点`;
+        : `${primaryLabel}未提供落点`;
       const modernText =
         ruler.modern && modern
           ? `，现代辅看${CELESTIAL_BODY_LABELS[ruler.modern] ?? ruler.modern}落本命第${modern.house}宫`
           : ruler.modern
-            ? `，现代辅看${CELESTIAL_BODY_LABELS[ruler.modern] ?? ruler.modern}但未写入落点`
+            ? `，现代辅看${CELESTIAL_BODY_LABELS[ruler.modern] ?? ruler.modern}但未提供落点`
             : '';
 
       return `第${house.house}宫${house.sign}宫头，${primaryText}${modernText}`;
@@ -485,7 +485,7 @@ export function buildAstrolabeScopeContext(
       promptText: [
         '分析对象：本命盘。',
         '时间边界：只判断长期性格结构、人生主题、稳定倾向与可长期调整的模式；不得自行指定流年、流月、流日或具体应期。',
-        ASTROLABE_UNCOMPUTED_TECH_LIMIT,
+        ASTROLABE_EVIDENCE_SCOPE_NOTE,
       ].join('\n'),
     };
   }
@@ -501,7 +501,7 @@ export function buildAstrolabeScopeContext(
         '分析对象：本命盘。',
         houseRulerChain,
         '时间边界：只判断长期性格结构、人生主题、稳定倾向与可长期调整的模式；不得自行指定流年、流月、流日或具体应期。',
-        ASTROLABE_UNCOMPUTED_TECH_LIMIT,
+        ASTROLABE_EVIDENCE_SCOPE_NOTE,
       ].join('\n'),
     };
   }
@@ -525,7 +525,7 @@ export function buildAstrolabeScopeContext(
       houseRulerChain,
       transitEvidence,
       transitHouseEvidence,
-      ASTROLABE_UNCOMPUTED_TECH_LIMIT,
+      ASTROLABE_EVIDENCE_SCOPE_NOTE,
       '时间边界：本命盘只定长期结构；所选流年、流月或流日只作为当前阶段触发与应期参考。回答时必须先围绕这个分析对象作答，不能把没有行运证据支持的年份、月份或日期硬说成确定应期。',
     ].join('\n'),
   };

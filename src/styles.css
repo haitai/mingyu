@@ -3513,6 +3513,220 @@ select {
   font-size: 12px;
 }
 
+.liuren-board {
+  margin-top: 14px;
+}
+
+.liuren-board .divination-extra-head span,
+.liuren-section-head span {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.liuren-plate-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(58px, 1fr));
+  grid-template-rows: repeat(5, minmax(58px, 1fr));
+  gap: 6px;
+  min-width: 0;
+}
+
+.liuren-plate-cell {
+  display: grid;
+  align-content: start;
+  gap: 5px;
+  min-width: 0;
+  min-height: 86px;
+  padding: 8px;
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  background: var(--surface-elevated);
+}
+
+.liuren-plate-cell.is-hour,
+.liuren-plate-cell.is-month-leader,
+.liuren-plate-cell.is-transmission {
+  border-color: var(--accent-soft);
+  background: linear-gradient(180deg, var(--accent-surface), var(--surface-elevated));
+}
+
+.liuren-plate-cell.is-nobleman {
+  box-shadow: inset 0 0 0 1px var(--accent-muted);
+}
+
+.liuren-plate-cell.is-empty {
+  opacity: 0.72;
+}
+
+.liuren-plate-branch-row,
+.liuren-plate-upper {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.liuren-plate-branch-row span,
+.liuren-plate-upper span,
+.liuren-card-kicker,
+.liuren-lesson-stack span {
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.liuren-plate-branch-row strong,
+.liuren-plate-upper strong,
+.liuren-lesson-stack strong {
+  color: var(--text-strong);
+  font-size: 18px;
+  line-height: 1.1;
+}
+
+.liuren-plate-god {
+  min-width: 0;
+  color: var(--accent-deep);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.liuren-plate-tags,
+.liuren-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.liuren-plate-tags span,
+.liuren-card-meta span {
+  min-height: 20px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.liuren-plate-center {
+  grid-column: 2 / 5;
+  grid-row: 2 / 5;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 7px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px dashed var(--border-contrast);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--surface-elevated) 78%, transparent);
+  text-align: center;
+}
+
+.liuren-plate-center span {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.liuren-plate-center strong {
+  color: var(--text-strong);
+  font-size: 18px;
+  line-height: 1.25;
+}
+
+.liuren-plate-center p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.liuren-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.liuren-section-head strong {
+  color: var(--text-strong);
+  font-size: 14px;
+}
+
+.liuren-lessons-grid,
+.liuren-transmission-chain {
+  display: grid;
+  gap: 10px;
+}
+
+.liuren-lessons-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.liuren-transmission-chain {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.liuren-lesson-card,
+.liuren-transmission-card {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  background: var(--surface-elevated);
+}
+
+.liuren-lesson-stack {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.liuren-lesson-stack div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  padding: 8px;
+  border-radius: 10px;
+  background: var(--surface-muted);
+}
+
+.liuren-transmission-card {
+  position: relative;
+}
+
+.liuren-transmission-card:not(:last-child)::after {
+  content: '→';
+  position: absolute;
+  top: 50%;
+  right: -16px;
+  z-index: 1;
+  width: 20px;
+  transform: translateY(-50%);
+  color: var(--accent-deep);
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.liuren-transmission-branch {
+  color: var(--text-strong);
+  font-size: 26px;
+  line-height: 1;
+}
+
+.liuren-lesson-card p,
+.liuren-transmission-card p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
 .almanac-participant-list {
   display: grid;
   gap: 10px;

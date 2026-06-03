@@ -50,13 +50,31 @@ const CONCRETE_DIVINATION_METHODS: Array<Exclude<DivinationMethodId, 'random'>> 
 function buildAstrolabeTransitScaleText(hasScopeText: boolean) {
   return [
     hasScopeText
-      ? '当前已写入【分析对象】：必须以用户选择的本命、流年、流月或流日作为本次回答主范围。'
-      : '当前未写入具体行运范围：只能按本命盘长期结构作答，不得自行指定流年、月份、日期或绝对应期。',
+      ? '【分析对象】已经给出本命、流年、流月或流日范围时，必须以该范围作为本次回答主范围。'
+      : '未提供具体行运范围时，只能按本命盘长期结构作答，不得自行指定流年、月份、日期或绝对应期。',
     '本命盘：只定长期人格结构、人生主题、稳定倾向、天赋短板和长期调整方向，不能单独推出具体年份。',
     '流年：看年度主题、阶段转向和全年最容易被触发的议题；外行星、木星、土星对本命太阳、月亮、上升、天顶及关键宫主星的相位是阶段主证。',
     '流月：看一个月内的推进窗口、情绪波动、沟通节奏和短期机会；太阳、月亮、水星、金星、火星对本命点的触发是短期主证，必须承接流年背景。',
     '流日：看当天或极短期的执行、会面、沟通、签约、出行和避险；只能作为临门触发，不改写本命结构或年度趋势。',
     '应期写法：先讲本命底色，再讲所选行运层级如何触发；没有行运证据时只能给倾向和条件，不能给绝对日期。',
+  ].join('\n');
+}
+
+function buildLiurenAnalysisObjectText(data: LiurenData) {
+  const initial = data.threeTransmissions[0];
+  return [
+    '分析对象：大六壬起课盘',
+    `起课范围：${data.dayNight || '昼夜未标注'}；月将${data.monthLeader}加占时${data.divinationBranch}`,
+    `主线对象：${data.transmissionRule || '取传法未标注'}；${initial ? `初传${initial.branch}乘${initial.god}` : '初传未标注'}`,
+    '资料说明：本次只提供起课盘面，不包含外部事实；问题涉及具体日期时，只能按课传应期条件判断。',
+  ].join('\n');
+}
+
+function buildLiurenScopeText() {
+  return [
+    '解读范围：只判断本课对应问题的当前走势、阻力、转机、应对动作与条件式应期。',
+    '推断顺序：先看古籍取传法与发用，再看三传推进，随后看四课背景，最后用天将、空亡、课体和神煞作旁证。',
+    '证据边界：课体、神煞和天将不得盖过发用与三传主线；已提供资料没有给出的现实条件不得编造。',
   ].join('\n');
 }
 
@@ -66,7 +84,7 @@ function buildDivinationTimingBoundaryText(method: Exclude<DivinationMethodId, '
       return [
         '六爻应期必须来自用神旺衰、世应生克、动爻变爻、冲合、空亡出空、伏神透出等卦内证据。',
         '卦名、六神、直觉类象只能作辅助说明，不得单凭卦名或六神给具体年月日。',
-        '若资料包未给月建、日辰或目标期限，只能给“快慢、先后、待冲合填实”等条件式应期，不得硬断绝对日期。',
+        '若已提供资料未给月建、日辰或目标期限，只能给“快慢、先后、待冲合填实”等条件式应期，不得硬断绝对日期。',
       ].join('\n');
     case 'meihua':
       return [
@@ -112,7 +130,7 @@ function buildDivinationTimingBoundaryText(method: Exclude<DivinationMethodId, '
       ].join('\n');
     case 'almanac':
       return [
-        '择日结论只能在候选日期范围内产生，不得推荐资料包范围外日期，也不得编造未给出的时辰吉凶。',
+        '择日结论只能在候选日期范围内产生，不得推荐候选范围外日期，也不得编造未给出的时辰吉凶。',
         '首选、备选、慎用必须说明黄历宜忌、冲煞、神煞、星宿、执日、参与人八字适配和现实约束。',
         '若候选日期整体都不理想，只能在范围内给相对较优和避险条件；现实刚性约束可以压过黄历分数，但必须说明取舍。',
       ].join('\n');
@@ -206,8 +224,8 @@ export function buildDivinationPrompt(
       ? '- 只基于提供的择日信息、补充信息与现实约束作答。'
       : '- 只基于提供的占卜信息与问题作答。',
     isAlmanac
-      ? '- 不得编造资料包没有给出的现实约束、参与人信息或择日条件；允许基于候选日期、黄历、冲煞、神煞、星宿和参与人八字参考做择日推理。'
-      : '- 不得编造资料包没有给出的卦象细节、盘局数据、牌位信息或签文条件；允许基于资料包做本体系推理，但必须标明证据来源。',
+      ? '- 不得编造已提供资料没有给出的现实约束、参与人信息或择日条件；允许基于候选日期、黄历、冲煞、神煞、星宿和参与人八字参考做择日推理。'
+      : '- 不得编造已提供资料没有给出的卦象细节、盘局数据、牌位信息或签文条件；允许基于已提供资料做本体系推理，但必须标明证据来源。',
     ...(isCustomQuestion
       ? []
       : [
@@ -250,9 +268,9 @@ export function buildDivinationPrompt(
       ].join('\n')
     : method === 'liuren'
       ? [
-          '先直接回答【问题】，再按【断课要点】或主线顺序展开起因、过程、结果与行动建议。',
-          '每一段都要写明对应的课传依据、触发条件与现实建议。',
-          '每一段都要区分主证、辅证、反证或限制；应期必须来自课传、空亡、三传演变或神煞触发，不得随口给日期。',
+          '先直接回答【问题】，再列最关键的 2 到 4 个判断点。',
+          '每个判断点只写必要课传依据、触发条件与现实建议。',
+          '应期必须来自发用、三传、空亡或明确神煞；证据不足就写条件，不硬给日期。',
           '如果信息不足或存在不确定性，需要明确说明，不要强行下绝对判断。',
           '最后补一条最值得执行的提醒。',
           buildMethodOutputRequirementText(method),
@@ -278,7 +296,7 @@ export function buildDivinationPrompt(
         ].join('\n');
   const liurenTemplateSection =
     method === 'liuren'
-      ? buildSection('【断课要点】', buildLiurenTemplateText(liurenTemplate, data as LiurenData))
+      ? buildSection('【分析思路】', buildLiurenTemplateText(liurenTemplate, data as LiurenData))
       : '';
   const liuyaoTemplateSection =
     method === 'liuyao'
@@ -308,7 +326,31 @@ export function buildDivinationPrompt(
   const taskText =
     method === 'astrolabe' && !isCustomQuestion
       ? buildAstrolabeTopicTask(astrolabeTopic)
-      : buildDivinationFocusTaskText(method, meihuaFocus, xiaoliurenFocus, qimenFocus);
+      : method === 'liuren'
+        ? [
+            '请先围绕【问题】给出判断，再按古籍取传法、发用、三传推进、四课背景和辅证说明理由。',
+            '需要明确事情会如何演变、卡点在哪、下一步先做什么；应期只能写课传支持的触发条件。',
+          ].join('\n')
+        : buildDivinationFocusTaskText(method, meihuaFocus, xiaoliurenFocus, qimenFocus);
+
+  if (method === 'liuren') {
+    return [
+      buildRoleText(method),
+      buildSection('【要求】', requirementText),
+      buildSection('【当前时间】', timeInfo),
+      supplementarySection ? buildSection('【补充信息】', supplementarySection) : '',
+      buildSection('【排盘信息】', infoText),
+      buildSection('【分析对象】', buildLiurenAnalysisObjectText(data as LiurenData)),
+      buildSection('【解读范围】', buildLiurenScopeText()),
+      timingBoundarySection,
+      buildSection('【问题】', normalizedQuestion),
+      isCustomQuestion ? '' : liurenTemplateSection,
+      isCustomQuestion ? '' : buildSection('【任务】', taskText),
+      isCustomQuestion ? '' : buildSection('【输出要求】', outputRequirementText),
+    ]
+      .filter(Boolean)
+      .join('\n\n');
+  }
 
   return [
     buildRoleText(method),

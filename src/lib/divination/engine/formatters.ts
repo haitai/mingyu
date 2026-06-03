@@ -1491,148 +1491,62 @@ function formatQimenInfo(question: string, data: QimenData, supplementaryInfo?: 
     .join('\n');
 }
 
-function formatLiurenInfo(question: string, data: LiurenData) {
-  const lessonLines = data.fourLessons.map(
-    (item) =>
-      `- ${item.name}：天盘${item.upper}临地盘${item.lower}，天将${item.god}，关系${item.relation}，提示${item.note}`,
-  );
-  const transmissionLines = data.threeTransmissions.map(
-    (item) =>
-      `- ${item.stage}：${item.branch}，天将${item.god}，关系${item.relation}，提示${item.note}`,
-  );
-  const plateLines = data.heavenlyPlate
-    .slice(0, 6)
-    .map((item) => `- ${item.under}位见${item.branch}，天将${item.god}`)
-    .join('\n');
+function formatLiurenInfo(data: LiurenData) {
   const firstTransmission = data.threeTransmissions[0];
-  const transmissionEvidence = data.threeTransmissions.map(
-    (item) => `${item.stage}${item.branch}乘${item.god}，${item.relation}，${item.note}`,
-  );
-  const stageEvidence = data.threeTransmissions.map((item) => {
-    const isVoid = data.xunKong?.includes(item.branch);
-    const stageMeaning =
-      item.stage === '初传'
-        ? '发端与眼前触发'
-        : item.stage === '中传'
-          ? '中途变化与卡点'
-          : '归结与最终落点';
-    return `${item.stage}${item.branch}：${stageMeaning}，${item.relation}${isVoid ? '，逢空需待填实或条件落地' : ''}`;
-  });
-  const lessonEvidence = data.fourLessons.map(
-    (item) => `${item.name}${item.upper}临${item.lower}乘${item.god}，${item.relation}`,
-  );
-  const sourceText = [
-    question,
-    data.lessonSummary,
-    data.transmissionSummary,
-    data.transmissionDetail,
-    ...data.fourLessons.map(
-      (item) => `${item.name}${item.upper}${item.lower}${item.god}${item.note}`,
-    ),
-    ...data.threeTransmissions.map((item) => `${item.stage}${item.branch}${item.god}${item.note}`),
-  ].join('；');
-  const classGodRules = [
-    {
-      label: '财',
-      pattern: /财|钱|收入|投资|生意|项目|客户|订单|资源|回款|交易/,
-      note: '主资源、收益、可兑现结果',
-    },
-    {
-      label: '官',
-      pattern: /工作|事业|岗位|升职|跳槽|领导|规则|官司|压力|名声/,
-      note: '主职位、规章、压力、名誉与风险',
-    },
-    {
-      label: '父母',
-      pattern: /合同|证件|文书|房|车|考试|资料|手续|长辈|消息/,
-      note: '主文书、手续、房产、长辈、保护条件',
-    },
-    {
-      label: '子孙',
-      pattern: /孩子|子女|作品|方案|创作|病|药|医生|娱乐|结果/,
-      note: '主产出、解法、子女、医药与放松',
-    },
-    {
-      label: '兄弟',
-      pattern: /朋友|同事|竞争|合作|兄弟|伙伴|借钱|分成|对手/,
-      note: '主同辈、竞争、分财与协作牵扯',
-    },
-  ];
-  const matchedClassGods = classGodRules.filter((rule) => rule.pattern.test(sourceText));
-  const classGodCandidates = (
-    matchedClassGods.length ? matchedClassGods : classGodRules.slice(0, 3)
-  )
-    .slice(0, 3)
-    .map((rule) => {
-      const lessonHits = data.fourLessons
-        .filter((item) => rule.pattern.test(`${item.name}${item.upper}${item.lower}${item.note}`))
-        .map((item) => `${item.name}${item.upper}临${item.lower}`);
-      const transmissionHits = data.threeTransmissions
-        .filter((item) => rule.pattern.test(`${item.stage}${item.branch}${item.note}`))
-        .map((item) => `${item.stage}${item.branch}`);
-      return `${rule.label}类神：${rule.note}；课传线索${[...lessonHits, ...transmissionHits].join('、') || '未见直接文字命中，需按问题语义和发用三传复核'}`;
-    });
-  const auxiliaryEvidence = [
-    data.guaTi?.length ? `课体${data.guaTi.join('、')}` : '',
-    data.patternTags?.length ? `课体标签${data.patternTags.join('、')}` : '',
-    data.shenShaSummary?.length ? `神煞${data.shenShaSummary.join('；')}` : '',
-    data.xunKong?.length ? `旬空${data.xunKong.join('、')}` : '',
-  ].filter(Boolean);
-  const focusParts = [
-    firstTransmission
-      ? `发用${firstTransmission.branch}乘${firstTransmission.god}，先看${firstTransmission.note}`
-      : '',
-    data.transmissionPattern ? `传态${data.transmissionPattern}` : '',
-    data.xunKong?.length ? `旬空${data.xunKong.join('、')}` : '',
-    data.transmissionRule ? `取传${data.transmissionRule}` : '',
-  ].filter(Boolean);
-  const firstTransmissionMainText = firstTransmission
-    ? `${firstTransmission.branch}乘${firstTransmission.god}为发用，${firstTransmission.relation}，${firstTransmission.note}；先定事情发端，再看中末传承接`
-    : '发用未定位，不能强立主线';
-  const classGodText = classGodCandidates.length
-    ? `${classGodCandidates.join('；')}；类神只用于锁定问事主题，不能压过发用、三传和四课`
-    : '类神未识别，按问题语义保守取用';
-  const lessonBackgroundText = lessonEvidence.length
-    ? `${lessonEvidence.join('；')}；四课用于判断背景、关系和取传来源`
-    : '四课资料不足，不能补造课体背景';
-  const transmissionEvolutionText = stageEvidence.length
-    ? `${stageEvidence.join('；')}；初传看发端，中传看过程，末传看结果`
-    : '三传资料不足，只能给条件式判断';
+  const lastTransmission = data.threeTransmissions[2];
+  const lessonText = data.fourLessons
+    .map((item) => `${item.name}${item.upper}临${item.lower}乘${item.god}，${item.relation}`)
+    .join('；');
+  const transmissionText = data.threeTransmissions
+    .map((item) => `${item.stage}${item.branch}乘${item.god}，${item.relation}，${item.note}`)
+    .join('；');
   const voidHits = data.threeTransmissions
     .filter((item) => data.xunKong?.includes(item.branch))
     .map((item) => `${item.stage}${item.branch}`);
-  const voidTimingText = data.xunKong?.length
-    ? `旬空${data.xunKong.join('、')}${voidHits.length ? `，命中${voidHits.join('、')}` : '，未直接命中三传'}；应期需待填实、冲实或相关类神落地`
-    : '未见旬空资料，不作空亡填实应期';
+  const auxiliaryEvidence = [
+    data.guaTi?.length ? `课体${data.guaTi.join('、')}` : '',
+    data.patternTags?.length ? `标签${data.patternTags.join('、')}` : '',
+    data.shenShaSummary?.length ? `神煞${data.shenShaSummary.join('；')}` : '',
+    data.xunKong?.length
+      ? `旬空${data.xunKong.join('、')}${voidHits.length ? `，命中${voidHits.join('、')}` : ''}`
+      : '',
+  ].filter(Boolean);
+  const summaryText = [data.lessonSummary, data.transmissionSummary, data.transmissionDetail]
+    .filter(Boolean)
+    .join('；');
+  const mainLineText = [
+    data.transmissionRule ? `取传${data.transmissionRule}` : '',
+    data.transmissionPattern ? `传态${data.transmissionPattern}` : '',
+    firstTransmission ? `发用${firstTransmission.branch}乘${firstTransmission.god}` : '',
+    lastTransmission ? `末传${lastTransmission.branch}` : '',
+  ].filter(Boolean);
+  const plateSummaryText = [
+    `月将${data.monthLeader}`,
+    `占时${data.divinationBranch}`,
+    data.dayNight || '',
+    data.noblemanBranch ? `贵人落${data.noblemanBranch}` : '',
+    data.xunKong?.length ? `旬空${data.xunKong.join('、')}` : '',
+  ].filter(Boolean);
+  const heavenlyPlateText = data.heavenlyPlate
+    .map((item) => `${item.under}上${item.branch}乘${item.god}`)
+    .join('；');
+  const classicalRuleText = data.classicalRules?.length
+    ? data.classicalRules.map((item) => `${item.source}：${item.rule}，${item.summary}`).join('；')
+    : '';
 
   return [
     '占法：大六壬',
     `时间干支：${formatGanzhi(data.ganzhi).replace('干支：', '')}`,
-    `核心结构：月将${data.monthLeader}；占时${data.divinationBranch}；发用${data.threeTransmissions[0]?.branch || '未知'}；末传${data.threeTransmissions[2]?.branch || '未知'}`,
-    `关键提示：${data.dayNight || '未知时段'}；贵人落${data.noblemanBranch || '未知'}；旬空${data.xunKong?.join('、') || '未知'}；取传法${data.transmissionRule || '未标注'}；传态${data.transmissionPattern || '未标注'}；课体标签${data.patternTags?.join('、') || '无'}`,
-    focusParts.length ? `断课抓手：${focusParts.join('；')}` : '',
-    `发用主线：${firstTransmissionMainText}`,
-    transmissionEvidence.length ? `主线证据：${transmissionEvidence.join('；')}` : '',
-    `类神取用：${classGodText}`,
-    `四课背景：${lessonBackgroundText}`,
-    `三传演变：${transmissionEvolutionText}`,
-    `空亡应期：${voidTimingText}`,
-    stageEvidence.length ? `三传阶段：${stageEvidence.join('；')}` : '',
-    classGodCandidates.length
-      ? `类神候选：${classGodCandidates.join('；')}；类神只用于锁定问事主题，仍以发用、三传和四课互证为准`
-      : '',
-    lessonEvidence.length ? `四课证据：${lessonEvidence.join('；')}` : '',
-    auxiliaryEvidence.length
-      ? `辅助证据：${auxiliaryEvidence.join('；')}；辅证若与三传主线冲突，先以发用与三传演变为准`
-      : '',
-    data.lessonSummary ? `判断依据：${data.lessonSummary}` : '',
-    data.transmissionDetail ? `取传说明：${data.transmissionDetail}` : '',
-    data.transmissionSummary ? `传变依据：${data.transmissionSummary}` : '',
-    '结构明细：',
-    ...lessonLines,
-    ...transmissionLines,
-    plateLines ? '天盘摘要：' : '',
-    plateLines,
+    `核心结构：盘面摘要：${plateSummaryText.join('；')}`,
+    data.earthlyPlate?.length ? `地盘：${data.earthlyPlate.join('、')}` : '',
+    heavenlyPlateText ? `天盘：${heavenlyPlateText}` : '',
+    data.dayStemResidence ? `日干寄宫：${data.ganzhi.day.charAt(0)}寄${data.dayStemResidence}` : '',
+    mainLineText.length ? `课传主线：${mainLineText.join('；')}` : '',
+    classicalRuleText ? `古籍依据：${classicalRuleText}` : '',
+    lessonText ? `四课：${lessonText}` : '',
+    transmissionText ? `三传：${transmissionText}` : '',
+    auxiliaryEvidence.length ? `辅证：${auxiliaryEvidence.join('；')}` : '',
+    summaryText ? `简要提示：${summaryText}` : '',
   ]
     .filter(Boolean)
     .join('\n');
@@ -1752,7 +1666,7 @@ function formatSsgwInfo(data: SsgwData) {
     `吉凶层级：${auspiciousLevel}`,
     `宜忌条件：${suitableText}；${tabooText}`,
     `迟速判断：${timingEvidence}`,
-    `典故映射：${canonicalStory ? '已按资料包典故作现实处境类比' : '未给典故，不能补造故事'}；典故只用于现实处境类比，不替代签诗主旨`,
+    `典故映射：${canonicalStory ? '已按所给典故作现实处境类比' : '未给典故，不能补造故事'}；典故只用于现实处境类比，不替代签诗主旨`,
     `签意取舍：${decisionEvidence}`,
     `事项映射：${topicEvidence}`,
     '复盘条件：以签诗、典故和现实条件是否对应为准；未给期限时不硬断绝对日期',
@@ -1935,7 +1849,7 @@ function formatAlmanacInfo(data: AlmanacData) {
     : '未见强禁忌命中；仍需检查用户现实限制，不能只按分数定案';
   const realityConstraintEvidence = [
     '现实刚性约束包括场地、证件、人员到场、交通、预算、天气和办理窗口',
-    '资料包未给现实时不得编造；若用户补充现实条件与黄历分数冲突，应说明为什么现实约束压过分数',
+    '已提供资料未给现实时不得编造；若用户补充现实条件与黄历分数冲突，应说明为什么现实约束压过分数',
   ].join('；');
   const availableWindowEvidence = [
     `只允许在${data.startDate}至${data.endDate}范围内排序`,
@@ -1949,7 +1863,7 @@ function formatAlmanacInfo(data: AlmanacData) {
 
   return [
     '占法：黄历择日',
-    `核心结构：择日事项：${data.topicLabel}；候选日期：${data.startDate} 至 ${data.endDate}；本地算法先按黄历宜忌、神煞、冲煞与参与人八字做初筛`,
+    `核心结构：择日事项：${data.topicLabel}；候选日期：${data.startDate} 至 ${data.endDate}；先按黄历宜忌、神煞、冲煞与参与人八字做初筛`,
     bestDay
       ? `初筛结论：当前排序第一为${bestDay.date}，评分${bestDay.score}；仍需结合用户现实约束复核，不可只按分数机械决定`
       : '初筛结论：暂无候选日期',
@@ -2106,7 +2020,7 @@ export function formatDivinationInfo(
     case 'qimen':
       return formatQimenInfo(question, data as QimenData, supplementaryInfo);
     case 'liuren':
-      return formatLiurenInfo(question, data as LiurenData);
+      return formatLiurenInfo(data as LiurenData);
     case 'tarot':
       return formatTarotInfo(data as TarotData);
     case 'ssgw':

@@ -194,7 +194,7 @@ function buildFortuneEvidenceLines(params: {
     level: '限制',
     title: '断事层级限制',
     detail: params.limitText,
-    source: '提示词规则',
+    source: '解读边界',
     weight: 20,
   });
 

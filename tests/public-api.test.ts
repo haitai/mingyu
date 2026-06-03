@@ -1557,7 +1557,11 @@ test('公开 API 各占卜提示词接口应一次返回占卜结果、摘要和
     assert.equal(typeof body.data.summary.title, 'string', `${method} summary 应有标题`);
     assert.ok(Array.isArray(body.data.summary.tags), `${method} summary 应有标签数组`);
     assert.ok(Array.isArray(body.data.summary.lines), `${method} summary 应有摘要行数组`);
-    assert.match(body.data.prompt, /【占卜信息】/, `${method} prompt 应包含占卜信息`);
+    assert.match(
+      body.data.prompt,
+      method === 'liuren' ? /【排盘信息】/ : /【占卜信息】/,
+      `${method} prompt 应包含排盘或占卜信息`,
+    );
     assert.match(
       body.data.prompt,
       method === 'almanac' ? /择日补充：我近期事业应该注意什么/ : /我近期事业应该注意什么/,
@@ -1634,8 +1638,8 @@ test('公开 API 六爻与大六壬提示词接口应区分专项模板字段', 
 
   assert.equal(liuren.response.status, 200);
   assert.equal(liuren.body.ok, true);
-  assert.match(liuren.body.data.prompt, /【断课要点】/);
-  assert.match(liuren.body.data.prompt, /断课类型：事业断课/);
+  assert.match(liuren.body.data.prompt, /【分析思路】/);
+  assert.match(liuren.body.data.prompt, /分析类型：事业断课/);
 });
 
 test('公开 API 参数错误应返回统一错误结构', async () => {
