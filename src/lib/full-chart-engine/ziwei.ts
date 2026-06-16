@@ -82,8 +82,12 @@ function formatZiweiBirthDate(year: number, month: number, day: number) {
 export function buildZiweiPayloadByScope(params: {
   astrolabe: IztroAstrolabe;
   horoscope: IztroHoroscope;
+  scopes?: ScopeType[];
 }) {
-  const scopes: ScopeType[] = ['origin', 'decadal', 'yearly', 'monthly', 'daily', 'hourly', 'age'];
+  const requestedScopes = params.scopes?.length
+    ? params.scopes
+    : (['origin', 'decadal', 'yearly', 'monthly', 'daily', 'hourly', 'age'] as ScopeType[]);
+  const scopes = Array.from(new Set(requestedScopes));
 
   return Object.fromEntries(
     scopes.map((scope) => [
@@ -98,12 +102,20 @@ export function buildZiweiPayloadByScope(params: {
 }
 
 export async function calculateFullZiweiChart(input: ChartInput): Promise<ZiweiRuntime> {
+  return calculateZiweiChartForScopes(input);
+}
+
+export async function calculateZiweiChartForScopes(
+  input: ChartInput,
+  scopes?: ScopeType[],
+): Promise<ZiweiRuntime> {
   const astrolabe = await buildAstrolabeFromInput(input);
   const { dateStr, hourIndex } = getDefaultHoroscopeContext();
   const horoscope = buildHoroscope(astrolabe, dateStr, hourIndex);
   const payloadByScope = buildZiweiPayloadByScope({
     astrolabe,
     horoscope,
+    scopes,
   });
 
   return {

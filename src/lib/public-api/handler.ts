@@ -1,7 +1,7 @@
 import { baziCalculator } from '../../utils/bazi/baziCalculator';
 import type { Person } from '../../utils/bazi/baziTypes';
 import { getTimeIndexFromClock } from '../../utils/dateUtils';
-import { buildZiweiChartInput, calculateFullZiweiChart } from '../full-chart-engine/ziwei';
+import { buildZiweiChartInput, calculateZiweiChartForScopes } from '../full-chart-engine/ziwei';
 import {
   daysInSolarMonth,
   getBirthDateValidationMessage,
@@ -458,6 +458,11 @@ export function getPublicApiOpenApiDocument() {
             month: { type: 'string' },
             day: { type: 'string' },
             timeIndex: { type: 'integer', minimum: 0, maximum: 12 },
+            promptScope: {
+              enum: [...ZIWEI_PROMPT_SCOPES],
+              description:
+                '可选。公开 API 默认只返回本命范围；传入后会额外返回指定分析范围，避免一次性生成全部运限导致接口超时。',
+            },
             isLeapMonth: { type: 'boolean' },
             useTrueSolarTime: { type: 'boolean' },
             birthHour: { type: 'string' },
@@ -646,7 +651,7 @@ function buildBaziPrompt(input: JsonRecord) {
   };
 }
 
-async function calculateZiweiRuntime(input: JsonRecord) {
+async function calculateZiweiRuntime(input: JsonRecord, scopes: ZiweiPromptScope[] = ['origin']) {
   const birthDate = readBirthDate(input, { asString: true });
   const { dateType } = birthDate;
   const useTrueSolarTime = readBoolean(input, 'useTrueSolarTime', false);
@@ -663,7 +668,7 @@ async function calculateZiweiRuntime(input: JsonRecord) {
         birthMinute: readString(input, 'birthMinute', ''),
         birthLongitude: readString(input, 'birthLongitude', ''),
       };
-  return calculateFullZiweiChart(
+  return calculateZiweiChartForScopes(
     buildZiweiChartInput({
       name: readString(input, 'name', ''),
       gender: readEnum(input, 'gender', ['male', 'female']),
@@ -678,15 +683,18 @@ async function calculateZiweiRuntime(input: JsonRecord) {
       birthMinute: timeInput.birthMinute,
       birthLongitude: timeInput.birthLongitude,
     }),
+    Array.from(new Set(['origin' as const, ...scopes])),
   );
 }
 
 async function calculateZiwei(input: JsonRecord) {
-  return buildSerializableZiweiResult(await calculateZiweiRuntime(input));
+  const scope = readEnum(input, 'promptScope', ZIWEI_PROMPT_SCOPES, 'origin') as ZiweiPromptScope;
+  return buildSerializableZiweiResult(await calculateZiweiRuntime(input, [scope]));
 }
 
 async function buildZiweiPrompt(input: JsonRecord) {
-  const result = await calculateZiweiRuntime(input);
+  const scope = readEnum(input, 'promptScope', ZIWEI_PROMPT_SCOPES, 'origin') as ZiweiPromptScope;
+  const result = await calculateZiweiRuntime(input, [scope]);
   const promptTopic =
     input.promptTopic === undefined
       ? undefined
@@ -697,7 +705,7 @@ async function buildZiweiPrompt(input: JsonRecord) {
       result,
       question: readRequiredString(input, 'question'),
       topic: promptTopic,
-      scope: readEnum(input, 'promptScope', ZIWEI_PROMPT_SCOPES, 'origin') as ZiweiPromptScope,
+      scope,
       mode: readEnum(input, 'promptMode', PROMPT_MODES, 'framework') as PromptMode,
     }),
   };

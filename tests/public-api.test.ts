@@ -267,6 +267,11 @@ test('公开 API OpenAPI 文档应标明占卜提示词接口返回摘要', asyn
   ]) {
     assert.match(baziTopicSchema, new RegExp(topic), `八字 promptTopic 应包含 ${topic}`);
   }
+  assert.ok(body.data.components.schemas.ZiweiRequest.properties.promptScope);
+  assert.match(
+    body.data.components.schemas.ZiweiRequest.properties.promptScope.description,
+    /避免一次性生成全部运限/,
+  );
 });
 
 test('公开 API 应支持八字排盘', async () => {
@@ -684,9 +689,35 @@ test('公开 API 紫微提示词接口应一次返回排盘和提示词', async 
 
   assert.equal(response.status, 200);
   assert.equal(body.ok, true);
-  assert.equal(body.data.result.scopeNames.includes('origin'), true);
+  assert.deepEqual(body.data.result.scopeNames, ['origin']);
   assert.match(body.data.prompt, /【问题】/);
   assert.match(body.data.prompt, /我的感情关系要注意什么/);
+});
+
+test('公开 API 紫微提示词接口只生成所需范围，避免线上函数超时', async () => {
+  const { response, body } = await callApi('ziwei/prompt', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name: '测试',
+      gender: 'female',
+      dateType: 'solar',
+      year: '1992',
+      month: '8',
+      day: '21',
+      timeIndex: 4,
+      question: '今年适合换工作吗？',
+      promptTopic: 'job-change',
+      promptScope: 'yearly',
+    }),
+  });
+
+  assert.equal(response.status, 200);
+  assert.equal(body.ok, true);
+  assert.deepEqual(body.data.result.scopeNames, ['origin', 'yearly']);
+  assert.equal(body.data.result.payloadByScope.yearly.active_scope.scope, 'yearly');
+  assert.equal(body.data.result.payloadByScope.decadal, undefined);
+  assert.match(body.data.prompt, /当前已选流年/);
 });
 
 test('公开 API 紫微空问题应返回 400，保持 question 必填契约', async () => {
@@ -1074,11 +1105,35 @@ test('公开 API 紫微排盘应支持真太阳时精确时分和经度', async 
 
   assert.equal(response.status, 200);
   assert.equal(body.ok, true);
+  assert.deepEqual(body.data.scopeNames, ['origin']);
   assert.equal(
     body.data.basicInfo.solar_date,
     `${corrected.year}-${String(corrected.month).padStart(2, '0')}-${String(corrected.day).padStart(2, '0')}`,
   );
   assert.equal(body.data.basicInfo.birth_time_range, timeIndexRangeMap[expectedTimeIndex]);
+});
+
+test('公开 API 紫微排盘接口支持按需返回指定范围', async () => {
+  const { response, body } = await callApi('ziwei/calculate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name: '测试',
+      gender: 'female',
+      dateType: 'solar',
+      year: '1992',
+      month: '8',
+      day: '21',
+      timeIndex: 4,
+      promptScope: 'monthly',
+    }),
+  });
+
+  assert.equal(response.status, 200);
+  assert.equal(body.ok, true);
+  assert.deepEqual(body.data.scopeNames, ['origin', 'monthly']);
+  assert.equal(body.data.payloadByScope.monthly.active_scope.scope, 'monthly');
+  assert.equal(body.data.payloadByScope.yearly, undefined);
 });
 
 test('公开 API 紫微真太阳时参数缺失或越界时应返回 400', async () => {
