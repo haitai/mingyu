@@ -161,7 +161,8 @@ export function buildZiweiPromptForRuntime(params: {
 
 function buildPublicZiweiTaskText(topic: ZiweiPromptTopic) {
   const topicTextMap: Partial<Record<ZiweiPromptTopic, string>> = {
-    relationship: '围绕感情关系，优先看夫妻宫、命宫、福德宫、迁移宫、三方四正与四化牵动，判断关系模式、风险点和经营建议。',
+    relationship:
+      '围绕感情关系，优先看夫妻宫、命宫、福德宫、迁移宫、三方四正与四化牵动，判断关系模式、风险点和经营建议。',
     'career-wealth':
       '围绕事业财运，优先看官禄宫、财帛宫、命宫、迁移宫、福德宫与四化牵动，判断发展方向、资源优势和风险边界。',
     'job-change':
