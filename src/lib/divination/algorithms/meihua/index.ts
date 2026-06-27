@@ -172,6 +172,8 @@ export function generateMeihua(customDate?: Date, settings?: MeihuaSettings): Me
       upper: upperTrigram.name,
       lower: lowerTrigram.name,
       description: mainHexagram.description,
+      yaoCi: mainHexagram.yaoCi,
+      movingYaoCi: mainHexagram.yaoCi?.[movingYaoIndex - 1] || '',
     },
     changedHexagram: changingHexagram
       ? {
@@ -180,6 +182,7 @@ export function generateMeihua(customDate?: Date, settings?: MeihuaSettings): Me
           upper: changedUpperResult?.trigram?.name || '',
           lower: changedLowerResult?.trigram?.name || '',
           description: changingHexagram.description,
+          yaoCi: changingHexagram.yaoCi,
         }
       : null,
     interHexagram: interHexagram
@@ -189,6 +192,7 @@ export function generateMeihua(customDate?: Date, settings?: MeihuaSettings): Me
           upper: interUpperResult?.trigram?.name || '',
           lower: interLowerResult?.trigram?.name || '',
           description: interHexagram.description,
+          yaoCi: interHexagram.yaoCi,
         }
       : null,
 

@@ -254,6 +254,8 @@ export interface MeihuaData extends BaseHexagramData {
     upper: string;
     lower: string;
     description: string;
+    yaoCi?: string[];
+    movingYaoCi?: string;
   };
   interHexagram?: {
     name: string;
@@ -261,6 +263,7 @@ export interface MeihuaData extends BaseHexagramData {
     upper: string;
     lower: string;
     description: string;
+    yaoCi?: string[];
   } | null;
   changedHexagram?: {
     name: string;
@@ -268,6 +271,7 @@ export interface MeihuaData extends BaseHexagramData {
     upper: string;
     lower: string;
     description: string;
+    yaoCi?: string[];
   } | null;
   yaosDetail: MeihuaYaoDetail[];
   calculation?: MeihuaCalculation;

@@ -12,6 +12,7 @@ export interface HexagramData {
   lower: string; // 下卦
   palace: string; // 所属八宫
   description: string;
+  yaoCi?: string[]; // 爻辞（初爻到上爻）
 }
 
 // 八卦基础数据接口
@@ -59,6 +60,14 @@ const rawHexagramsData = [
     lower: '乾',
     palace: '乾',
     description: '元亨利贞',
+    yaoCi: [
+      '潜龙勿用',
+      '见龙在田，利见大人',
+      '君子终日乾乾，夕惕若厉，无咎',
+      '或跃在渊，无咎',
+      '飞龙在天，利见大人',
+      '亢龙有悔',
+    ],
   },
   {
     id: 44,
@@ -551,6 +560,14 @@ const rawHexagramsData = [
     lower: '坤',
     palace: '坤',
     description: '元亨，利牝马之贞',
+    yaoCi: [
+      '履霜，坚冰至',
+      '直方大，不习无不利',
+      '含章可贞，或从王事，无成有终',
+      '括囊，无咎无誉',
+      '黄裳，元吉',
+      '龙战于野，其血玄黄',
+    ],
   },
   {
     id: 24,
