@@ -32,7 +32,7 @@ const almanacParticipantSchema = z.object({
 
 const almanacSchema = z.object({
   topic: z
-    .enum(['marriage', 'move', 'opening', 'contract', 'travel', 'medical', 'study', 'custom'])
+    .enum(['marriage', 'move', 'opening', 'contract', 'travel', 'medical', 'study', 'burial', 'renovation', 'custom'])
     .describe('择日事项'),
   startDate: z.string().describe('开始日期，格式为 YYYY-MM-DD'),
   endDate: z.string().describe('结束日期，格式为 YYYY-MM-DD；最多比较 31 天'),

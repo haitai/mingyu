@@ -1137,9 +1137,10 @@ function formatLiuyaoInfo(
     .filter((item) => item.isChanging)
     .map((item) => {
       const changedText = item.changedYao
-        ? `化${item.changedYao.liuqin}${item.changedYao.dizhi}${item.changedYao.wuxing}${item.changedYao.isVoid ? '（变空）' : ''}`
+        ? `化${item.changedYao.liuqin}${item.changedYao.dizhi}${item.changedYao.wuxing}${item.changedYao.isVoid ? '（变空）' : ''}${(item as any).changeDirection ? `（${(item as any).changeDirection}）` : ''}`
         : '无变爻资料';
-      return `${formatLiuyaoYaoBrief(item)}${item.isVoid ? '（空）' : ''}${changedText}`;
+      const breakText = (item as any).isDayBreak ? '（日破）' : (item as any).isMonthBreak ? '（月破）' : '';
+      return `${formatLiuyaoYaoBrief(item)}${item.isVoid ? '（空）' : ''}${breakText}${changedText}`;
     });
   const voidYaoText = data.yaosDetail
     .filter((item) => item.isVoid || item.changedYao?.isVoid)
@@ -1177,10 +1178,12 @@ function formatLiuyaoInfo(
         item.isWorld ? '世' : '',
         item.isResponse ? '应' : '',
         item.isVoid ? '空' : '',
+        (item as any).isDayBreak ? '日破' : '',
+        (item as any).isMonthBreak ? '月破' : '',
         item.isChanging ? `动变${item.changeType}` : '',
       ].filter(Boolean);
       const changedYaoText = item.changedYao
-        ? `；变爻${item.changedYao.dizhi}${item.changedYao.wuxing}，六亲${item.changedYao.liuqin}${item.changedYao.isVoid ? '，变爻空亡' : ''}`
+        ? `；变爻${item.changedYao.dizhi}${item.changedYao.wuxing}，六亲${item.changedYao.liuqin}${item.changedYao.isVoid ? '，变爻空亡' : ''}${(item as any).changeDirection ? `，${(item as any).changeDirection}` : ''}`
         : '';
       return `- 第${item.position}爻：${item.yaoType}爻，六亲${item.sixRelative}，六神${item.sixGod}，纳甲${item.najiaDizhi}${item.wuxing}${flags.length ? `，${flags.join(' / ')}` : ''}${changedYaoText}`;
     });

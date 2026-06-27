@@ -24,6 +24,80 @@ import {
 } from '../../../config/divination-data.ts';
 import { generateYaosByTime, getDivinationTime } from '../../../utils/timeManager.ts';
 
+// 六冲关系
+const LIU_CHONG: Record<string, string> = {
+  子: '午', 午: '子',
+  丑: '未', 未: '丑',
+  寅: '申', 申: '寅',
+  卯: '酉', 酉: '卯',
+  辰: '戌', 戌: '辰',
+  巳: '亥', 亥: '巳',
+};
+
+// 地支五行
+const BRANCH_WUXING: Record<string, string> = {
+  子: '水', 丑: '土', 寅: '木', 卯: '木', 辰: '土', 巳: '火',
+  午: '火', 未: '土', 申: '金', 酉: '金', 戌: '土', 亥: '水',
+};
+
+// 地支顺序（用于判断进神退神）
+const BRANCH_ORDER = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
+
+/**
+ * 判断是否为日破：爻的地支被日辰地支冲克
+ */
+function isDayBreak(branch: string, dayBranch: string): boolean {
+  return LIU_CHONG[branch] === dayBranch;
+}
+
+/**
+ * 判断是否为月破：爻的地支被月建地支冲克
+ */
+function isMonthBreak(branch: string, monthBranch: string): boolean {
+  return LIU_CHONG[branch] === monthBranch;
+}
+
+/**
+ * 判断化进神/退神
+ * 化进神：动爻变出的爻与原爻同五行，且顺序递进（如寅木化卯木）
+ * 化退神：动爻变出的爻与原爻同五行，且顺序递退（如卯木化寅木）
+ */
+function getChangeDirection(
+  originalBranch: string,
+  changedBranch: string,
+): '化进神' | '化退神' | null {
+  const originalWuxing = BRANCH_WUXING[originalBranch];
+  const changedWuxing = BRANCH_WUXING[changedBranch];
+
+  // 必须同五行
+  if (!originalWuxing || !changedWuxing || originalWuxing !== changedWuxing) {
+    return null;
+  }
+
+  const originalIndex = BRANCH_ORDER.indexOf(originalBranch);
+  const changedIndex = BRANCH_ORDER.indexOf(changedBranch);
+
+  if (originalIndex === -1 || changedIndex === -1) {
+    return null;
+  }
+
+  // 计算顺时针距离（进）
+  const forwardDistance = (changedIndex - originalIndex + 12) % 12;
+  // 计算逆时针距离（退）
+  const backwardDistance = (originalIndex - changedIndex + 12) % 12;
+
+  // 进神：顺行一位（距离1）
+  if (forwardDistance === 1) {
+    return '化进神';
+  }
+  // 退神：逆行一位（距离1）
+  if (backwardDistance === 1) {
+    return '化退神';
+  }
+
+  return null;
+}
+
 /**
  * 寻宫：根据卦名查找其所属的八宫
  * @param hexagramName 卦名，如“乾为天”
@@ -249,6 +323,8 @@ export function generateLiuyao(customDate?: Date) {
   }
 
   const dayGan = ganzhi.day.substring(0, 1);
+  const dayBranch = ganzhi.day.substring(1);
+  const monthBranch = ganzhi.month.substring(1);
   const animals = getSixAnimals(dayGan);
   const palace = findPalace(mainHexagram.name);
   const yaosInfo = getNaJiaAndLiuQin(mainHexagram.name, palace);
@@ -279,6 +355,12 @@ export function generateLiuyao(customDate?: Date) {
   const yaosDetail = yaosInfo.map((info, index) => {
     const isChanging = rawYaos[index] === 6 || rawYaos[index] === 9;
     const changedInfo = isChanging ? changedYaosInfo[index] : null;
+    const isDayBreakFlag = isDayBreak(info.dizhi, dayBranch);
+    const isMonthBreakFlag = isMonthBreak(info.dizhi, monthBranch);
+    const changeDirection = changedInfo
+      ? getChangeDirection(info.dizhi, changedInfo.dizhi)
+      : null;
+
     return {
       position: index + 1,
       rawValue: rawYaos[index],
@@ -292,6 +374,9 @@ export function generateLiuyao(customDate?: Date) {
       isWorld: shiYing.shi === index + 1,
       isResponse: shiYing.ying === index + 1,
       isVoid: voids.includes(info.dizhi),
+      isDayBreak: isDayBreakFlag,
+      isMonthBreak: isMonthBreakFlag,
+      changeDirection: changeDirection,
       changedYao: changedInfo
         ? {
             dizhi: changedInfo.dizhi,

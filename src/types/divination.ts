@@ -434,6 +434,8 @@ export type AlmanacTopic =
   | 'travel'
   | 'medical'
   | 'study'
+  | 'burial'
+  | 'renovation'
   | 'custom';
 
 export type AlmanacParticipantGender = '男' | '女' | '';

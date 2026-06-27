@@ -17,6 +17,8 @@ export const ALMANAC_TOPIC_LABELS: Record<AlmanacTopic, string> = {
   travel: '出行赴任',
   medical: '就医手术',
   study: '考试学习',
+  burial: '安葬修坟',
+  renovation: '修造动土',
   custom: '自定义事项',
 };
 
@@ -28,6 +30,8 @@ const TOPIC_RECOMMEND_KEYWORDS: Record<AlmanacTopic, string[]> = {
   travel: ['出行', '赴任', '移徙'],
   medical: ['求医', '治病', '解除'],
   study: ['入学', '求嗣', '祭祀', '祈福'],
+  burial: ['安葬', '修坟', '启钻', '立碑', '入殓', '移柩'],
+  renovation: ['修造', '动土', '竖柱', '上梁', '盖屋', '起基'],
   custom: [],
 };
 
@@ -39,6 +43,8 @@ const TOPIC_AVOID_KEYWORDS: Record<AlmanacTopic, string[]> = {
   travel: ['出行', '赴任'],
   medical: ['求医', '治病'],
   study: ['入学', '求嗣'],
+  burial: ['安葬', '修坟', '启钻'],
+  renovation: ['修造', '动土', '竖柱', '上梁'],
   custom: [],
 };
 

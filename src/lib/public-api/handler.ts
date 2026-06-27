@@ -222,7 +222,7 @@ const DIVINATION_REQUEST_PROPERTIES = {
   liuyaoTemplate: { enum: ['general', 'ganqing', 'shiye', 'caifu', 'guaishen'] },
   liurenTemplate: { enum: ['general', 'ganqing', 'shiye', 'caifu'] },
   topic: {
-    enum: ['marriage', 'move', 'opening', 'contract', 'travel', 'medical', 'study', 'custom'],
+    enum: ['marriage', 'move', 'opening', 'contract', 'travel', 'medical', 'study', 'burial', 'renovation', 'custom'],
   },
   startDate: { type: 'string', format: 'date' },
   endDate: { type: 'string', format: 'date' },
@@ -818,6 +818,8 @@ function calculateAlmanac(input: JsonRecord) {
       'travel',
       'medical',
       'study',
+      'burial',
+      'renovation',
       'custom',
     ]) as AlmanacTopic,
     startDate,
