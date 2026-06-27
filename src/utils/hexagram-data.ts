@@ -134,6 +134,14 @@ const rawHexagramsData = [
     lower: '坤',
     palace: '乾',
     description: '不利有攸往',
+    yaoCi: [
+      '剥床以足，蔑贞凶',
+      '剥床以辨，蔑贞凶',
+      '剥之，无咎',
+      '剥床以肤，凶',
+      '贯鱼，以宫人宠',
+      '硕果不食，君子得舆',
+    ],
   },
   {
     id: 35,
@@ -298,6 +306,14 @@ const rawHexagramsData = [
     lower: '离',
     palace: '艮',
     description: '亨，小利有攸往',
+    yaoCi: [
+      '贲其趾，舍车而徒',
+      '贲其须',
+      '贲如濡如，永贞吉',
+      '贲如皤如，白马翰如',
+      '贲于丘园，束帛戋戋',
+      '白贲，无咎',
+    ],
   },
   {
     id: 26,
@@ -550,6 +566,14 @@ const rawHexagramsData = [
     lower: '震',
     palace: '巽',
     description: '亨，利用狱',
+    yaoCi: [
+      '屦校灭趾，无咎',
+      '噬肤灭鼻，无咎',
+      '噬腊肉，遇毒',
+      '噬干胏，得金矢',
+      '噬干肉，得黄金',
+      '何校灭耳，凶',
+    ],
   },
   {
     id: 27,
@@ -730,6 +754,14 @@ const rawHexagramsData = [
     lower: '震',
     palace: '坤',
     description: '亨，出入无疾',
+    yaoCi: [
+      '不远复，无祗悔',
+      '休复，吉',
+      '频复，厉，无咎',
+      '中行独复',
+      '敦复，无悔',
+      '迷复，凶',
+    ],
   },
   {
     id: 19,
