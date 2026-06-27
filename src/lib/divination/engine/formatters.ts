@@ -1170,6 +1170,7 @@ function formatLiuyaoInfo(
     `动爻${movingYaos}`,
     `空亡${data.voidBranches?.join('、') || '无'}`,
     data.specialPattern ? `卦式${data.specialPattern}` : '',
+    worldYao ? `六亲持世：${worldYao.sixRelative}` : '',
   ].filter(Boolean);
   const yaoLines = [...data.yaosDetail]
     .sort((a, b) => b.position - a.position)
@@ -1193,6 +1194,7 @@ function formatLiuyaoInfo(
     `时间干支：${formatGanzhi(data.ganzhi).replace('干支：', '')}`,
     `核心结构：主卦${data.originalName}${data.palace?.name ? `（${data.palace.name}宫）` : ''}；变卦${data.changedName || '无'}；互卦${data.interName || '无'}`,
     `关键提示：空亡${data.voidBranches?.join('、') || '无'}；动爻${movingYaos}；世应${worldYao ? `世爻在第${worldYao.position}爻` : '世爻未知'}、${responseYao ? `应爻在第${responseYao.position}爻` : '应爻未知'}；特殊卦式${data.specialPattern || '常规卦'}`,
+    worldYao ? `六亲持世：${worldYao.sixRelative}持世，${worldYao.sixRelative === '父母' ? '主辛苦、劳累、文书、消息' : worldYao.sixRelative === '官鬼' ? '主压力、忧虑、疾病、官非' : worldYao.sixRelative === '妻财' ? '主财运、妻子、情感' : worldYao.sixRelative === '子孙' ? '主平安、解忧、医药' : '主竞争、破财、朋友'}` : '',
     `断卦抓手：${focusParts.join('；')}`,
     `用神候选：${usefulGodHints.join('；')}`,
     specialFocusHints.length ? `专项抓手：${specialFocusHints.join('；')}` : '',
