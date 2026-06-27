@@ -88,6 +88,14 @@ const rawHexagramsData = [
     lower: '艮',
     palace: '乾',
     description: '亨，小利贞',
+    yaoCi: [
+      '遁尾，厉',
+      '执之用黄牛之革',
+      '系遁，有疾厉',
+      '好遁，君子吉',
+      '嘉遁，贞吉',
+      '肥遁，无不利',
+    ],
   },
   {
     id: 12,
@@ -448,6 +456,14 @@ const rawHexagramsData = [
     lower: '巽',
     palace: '震',
     description: '亨，无咎，利贞',
+    yaoCi: [
+      '浚恒，贞凶',
+      '悔亡',
+      '不恒其德，或承之羞',
+      '田无禽',
+      '恒其德，贞，妇人吉',
+      '振恒，凶',
+    ],
   },
   {
     id: 46,
@@ -840,6 +856,14 @@ const rawHexagramsData = [
     lower: '乾',
     palace: '坤',
     description: '利贞',
+    yaoCi: [
+      '壮于趾，征凶',
+      '贞吉',
+      '小人用壮，君子用罔',
+      '贞吉悔亡，藩决不羸',
+      '丧羊于易，无悔',
+      '羝羊触藩，不能退',
+    ],
   },
   {
     id: 43,
@@ -936,6 +960,14 @@ const rawHexagramsData = [
     lower: '艮',
     palace: '兑',
     description: '亨，利贞，取女吉',
+    yaoCi: [
+      '咸其拇',
+      '咸其腓，凶，居吉',
+      '咸其股，执其随',
+      '贞吉悔亡，憧憧往来',
+      '咸其脢，无悔',
+      '咸其辅颊舌',
+    ],
   },
   {
     id: 39,
