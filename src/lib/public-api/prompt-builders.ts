@@ -180,7 +180,7 @@ export function buildBaziPromptForResult(params: {
 }
 
 export function buildSerializableZiweiResult(result: ZiweiRuntime) {
-  const originPayload = result.payloadByScope.origin;
+  const originPayload = result.payloadByScope.origin ?? Object.values(result.payloadByScope)[0]!;
   const compatibility = buildZiweiCompatibilityFields(originPayload);
 
   return {

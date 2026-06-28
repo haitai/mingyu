@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import type { ScopeType } from '../../../src/types/analysis.js';
 import {
   buildZiweiChartInput,
   calculateZiweiChartForScopes,
@@ -128,7 +129,8 @@ export function registerZiweiTool(server: McpServer) {
       try {
         const input = buildMcpZiweiChartInput(args);
         const scope = (args.promptScope ?? 'origin') as ZiweiPromptScope;
-        const result = await calculateZiweiChartForScopes(input, [scope]);
+        const scopes: ScopeType[] = Array.from(new Set(['origin' as ScopeType, scope as ScopeType]));
+        const result = await calculateZiweiChartForScopes(input, scopes);
         return createStructuredToolResult(buildSerializableZiweiResult(result));
       } catch (error) {
         return createErrorToolResult(getErrorMessage(error, '排盘失败'));
@@ -151,7 +153,8 @@ export function registerZiweiTool(server: McpServer) {
       try {
         const input = buildMcpZiweiChartInput(args);
         const scope = (args.promptScope ?? 'origin') as ZiweiPromptScope;
-        const result = await calculateZiweiChartForScopes(input, [scope]);
+        const scopes: ScopeType[] = Array.from(new Set(['origin' as ScopeType, scope as ScopeType]));
+        const result = await calculateZiweiChartForScopes(input, scopes);
         return createStructuredToolResult({
           result: buildSerializableZiweiResult(result),
           prompt: buildZiweiPromptForRuntime({
