@@ -779,7 +779,12 @@ function calculateQimen(input: JsonRecord) {
 }
 
 function calculateMeihua(input: JsonRecord) {
-  const method = readEnum(input, 'method', ['time', 'number', 'random', 'external', 'laterHeaven'], 'time');
+  const method = readEnum(
+    input,
+    'method',
+    ['time', 'number', 'random', 'external', 'laterHeaven'],
+    'time',
+  );
   const settings: MeihuaSettings = {
     method,
     ...(method === 'number' ? { number: readInteger(input, 'number', 1) } : {}),

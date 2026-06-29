@@ -238,16 +238,9 @@ const NINE_STARS: Record<string, { wuxing: string; fortune: string; meaning: str
 };
 
 /**
- * 六曜（《象吉通书》六曜历注）：
+ * 六曜历注（备查，tyme4ts 未直接提供六曜数据）：
+ * 先胜(吉)、友引(吉)、先负(凶)、佛灭(凶)、大安(吉)、赤口(凶)
  */
-const LIUYAO: Record<string, { fortune: string; meaning: string }> = {
-  先胜: { fortune: '吉', meaning: '先胜日，上午吉下午衰，宜早不宜迟' },
-  友引: { fortune: '吉', meaning: '友引日，早晚吉中午凶，宜社交' },
-  先负: { fortune: '凶', meaning: '先负日，上午衰下午吉，宜迟不宜早' },
-  佛灭: { fortune: '凶', meaning: '佛灭日，诸事不宜，百事皆凶' },
-  大安: { fortune: '吉', meaning: '大安日，百事皆吉，最宜婚嫁出行' },
-  赤口: { fortune: '凶', meaning: '赤口日，午前吉午后凶，宜祭祀' },
-};
 
 /**
  * 彭祖百忌（每日天干地支对应的禁忌）：
@@ -487,6 +480,10 @@ function buildDayCandidate(
     participants,
   });
 
+  // 彭祖百忌完整：天干+地支
+  const dayStemName = dayCycle.getHeavenStem().getName();
+  const dayZhiName = dayCycle.getEarthBranch().getName();
+
   return {
     date: formatDate(date),
     weekday: WEEKDAYS[date.getDay()],
@@ -508,8 +505,8 @@ function buildDayCandidate(
     avoids,
     pengZu: dayCycle.getPengZu().getName(),
     // 彭祖百忌完整：天干+地支
-    pengZuGan: PENGZU_DAY_GAN[lunarDay.getSixtyCycle().getHeavenlyStem().getName()] || '',
-    pengZuZhi: PENGZU_DAY_ZHI[lunarDay.getSixtyCycle().getEarthBranch().getName()] || '',
+    pengZuGan: PENGZU_DAY_GAN[dayStemName] || '',
+    pengZuZhi: PENGZU_DAY_ZHI[dayZhiName] || '',
     clash: `冲${dayBranch.getOpposite().getName()}，煞${dayBranch.getOminous().getName()}`,
     score: scoring.score,
     highlights: scoring.highlights,

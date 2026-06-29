@@ -17,7 +17,7 @@ import type { MeihuaData, MeihuaSettings } from '../../../../types/divination';
 import { trigramsByIndex } from '../../../../utils/hexagram-data';
 import { MeihuaHelpers } from '../../../../utils/divination-helpers';
 import { getDivinationTime } from '../../../../utils/timeManager';
-import { getSeasonState, BRANCH_WUXING, isSheng, isKe, LIUHE_MAP, LIUCHONG_MAP } from '../_shared';
+import { getSeasonState, isSheng, isKe } from '../_shared';
 import { findHexagramByTrigrams, resolveTiYongByMovingYao } from './helpers/hexagram';
 import {
   resolveExternalMethod,
@@ -28,7 +28,9 @@ import {
   type MeihuaMethodResult,
 } from './helpers/methods';
 
-const trigrams = trigramsByIndex;/**
+const trigrams = trigramsByIndex;
+
+/**
  * 体用生克关系判定字串
  */
 function getTiYongRelation(yongElement: string, tiElement: string): string {
@@ -54,7 +56,14 @@ function estimateYingQi(params: {
   seasonState: '旺' | '相' | '休' | '囚' | '死' | '平';
 }): string[] {
   const periods: string[] = [];
-  const { movingYaoIndex, upperTrigramIndex, lowerTrigramIndex, tiElement, yongElement, seasonState } = params;
+  const {
+    movingYaoIndex,
+    upperTrigramIndex,
+    lowerTrigramIndex,
+    tiElement,
+    yongElement,
+    seasonState,
+  } = params;
 
   // 1. 动爻数定应期范围：初爻快（日），二爻周，三爻月，四爻季，五爻半年，上爻年
   const yaoPeriodMap: Record<number, string> = {

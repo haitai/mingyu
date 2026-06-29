@@ -180,7 +180,7 @@ export function generateXiaoliuren(params?: {
   customDate?: Date;
 }): XiaoliurenData {
   const method = params?.method ?? 'time';
-  const { timeInfo, timestamp } = getDivinationTime(params?.customDate);
+  const { ganzhi, timeInfo, timestamp } = getDivinationTime(params?.customDate);
   const lunarMonth = timeInfo.lunar.monthNumber;
   const lunarDay = timeInfo.lunar.dayNumber;
   const hourIndex = getTimeIndexFromClock(timeInfo.solar.hour, timeInfo.solar.minute);
@@ -244,8 +244,8 @@ export function generateXiaoliuren(params?: {
     description: wuXingDesc || '三宫五行无特殊生克态势',
   };
 
-  // 旺衰按月令分析
-  const monthBranch = (timeInfo as any)?.lunar?.monthBranch || '';
+  // 旺衰按月令分析（取月干支的地支）
+  const monthBranch = ganzhi?.month?.slice(-1) || '';
   const seasonStates = {
     start: monthBranch ? getSeasonState(start.element, monthBranch) : '平',
     process: monthBranch ? getSeasonState(process.element, monthBranch) : '平',
@@ -254,12 +254,12 @@ export function generateXiaoliuren(params?: {
 
   // 应期估算
   const yingQiEstimates: Record<string, string> = {
-    '大安': '1-7日内或有初步消息，春季应期更快',
-    '留连': '2-8日内或1-2月内，需等待转机，夏秋间或可解',
-    '速喜': '3-9日内消息即至，夏季应期更快',
-    '赤口': '4-7日内注意争执，秋季尤验',
-    '小吉': '1-4周内可见助力，冬季应期更佳',
-    '空亡': '应期不定，建议重新评估后再定时间',
+    大安: '1-7日内或有初步消息，春季应期更快',
+    留连: '2-8日内或1-2月内，需等待转机，夏秋间或可解',
+    速喜: '3-9日内消息即至，夏季应期更快',
+    赤口: '4-7日内注意争执，秋季尤验',
+    小吉: '1-4周内可见助力，冬季应期更佳',
+    空亡: '应期不定，建议重新评估后再定时间',
   };
 
   return {

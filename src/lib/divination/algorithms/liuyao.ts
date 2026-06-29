@@ -23,7 +23,15 @@ import {
   palaceHexagrams,
 } from '../../../config/divination-data.ts';
 import { generateYaosByTime, getDivinationTime } from '../../../utils/timeManager.ts';
-import { isSheng, isKe, isLiuhe, isLiuhai, isSanxing, getSanxingType, getSeasonState } from './_shared';
+import {
+  isSheng,
+  isKe,
+  isLiuhe,
+  isLiuhai,
+  isSanxing,
+  getSanxingType,
+  getSeasonState,
+} from './_shared';
 
 // 六冲关系
 const LIU_CHONG: Record<string, string> = {
@@ -100,8 +108,21 @@ function getShiErGong(wuxing: string, branch: string): string {
   const startIndex = BRANCH_ORDER.indexOf(startBranch);
   const branchIndex = BRANCH_ORDER.indexOf(branch);
   if (startIndex === -1 || branchIndex === -1) return '';
-  const offset = ((branchIndex - startIndex) % 12 + 12) % 12;
-  const SHI_ER_GONG = ['长生', '沐浴', '冠带', '临官', '帝旺', '衰', '病', '死', '墓', '绝', '胎', '养'];
+  const offset = (((branchIndex - startIndex) % 12) + 12) % 12;
+  const SHI_ER_GONG = [
+    '长生',
+    '沐浴',
+    '冠带',
+    '临官',
+    '帝旺',
+    '衰',
+    '病',
+    '死',
+    '墓',
+    '绝',
+    '胎',
+    '养',
+  ];
   return SHI_ER_GONG[offset] || '';
 }
 
@@ -537,7 +558,11 @@ export function generateLiuyao(customDate?: Date) {
       isSanxing: isSanxing(info.dizhi, dayBranch) || isSanxing(info.dizhi, monthBranch),
       sanxingType: getSanxingType(info.dizhi) || undefined,
       isLiuhe: isLiuhe(info.dizhi, dayBranch) || isLiuhe(info.dizhi, monthBranch),
-      liuhePartner: isLiuhe(info.dizhi, dayBranch) ? dayBranch : isLiuhe(info.dizhi, monthBranch) ? monthBranch : undefined,
+      liuhePartner: isLiuhe(info.dizhi, dayBranch)
+        ? dayBranch
+        : isLiuhe(info.dizhi, monthBranch)
+          ? monthBranch
+          : undefined,
       isLiuhai: isLiuhai(info.dizhi, dayBranch) || isLiuhai(info.dizhi, monthBranch),
       isRuMu: isRuMu(info.wuxing, dayBranch) || isRuMu(info.wuxing, monthBranch),
       shiErGong: getShiErGong(info.wuxing, info.dizhi),
@@ -591,7 +616,12 @@ export function generateLiuyao(customDate?: Date) {
   // 卦身（按六爻传统，世爻所在位置对应卦身地支）：
   // 世在初爻卦身在子、二爻在寅、三爻在辰、四爻在午、五爻在申、六爻在戌
   const SHI_TO_GUA_SHEN: Record<number, string> = {
-    1: '子', 2: '寅', 3: '辰', 4: '午', 5: '申', 6: '戌',
+    1: '子',
+    2: '寅',
+    3: '辰',
+    4: '午',
+    5: '申',
+    6: '戌',
   };
   const guaShenBranch = SHI_TO_GUA_SHEN[shiYing.shi] || '';
   const guaShenYao = yaosInfo.find((i) => i.dizhi === guaShenBranch);

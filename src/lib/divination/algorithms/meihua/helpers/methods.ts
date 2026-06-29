@@ -99,16 +99,16 @@ export function resolveLaterHeavenMethod(timeBranch: string): MeihuaMethodResult
     // fallback: 使用时辰序数
     const timeIndex = dizhi.indexOf(timeBranch) + 1;
     return {
-      upperTrigramIndex: ((timeIndex % 8) || 8),
-      lowerTrigramIndex: (((timeIndex * 3) % 8) || 8),
-      movingYaoIndex: (timeIndex % 6) || 6,
+      upperTrigramIndex: timeIndex % 8 || 8,
+      lowerTrigramIndex: (timeIndex * 3) % 8 || 8,
+      movingYaoIndex: timeIndex % 6 || 6,
       calculation: {
         method: '端法后天起卦法',
         methodKey: 'laterHeaven',
         timeBranch,
-        upperTrigramIndex: ((timeIndex % 8) || 8),
-        lowerTrigramIndex: (((timeIndex * 3) % 8) || 8),
-        movingYaoIndex: (timeIndex % 6) || 6,
+        upperTrigramIndex: timeIndex % 8 || 8,
+        lowerTrigramIndex: (timeIndex * 3) % 8 || 8,
+        movingYaoIndex: timeIndex % 6 || 6,
       },
     };
   }

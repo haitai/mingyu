@@ -455,17 +455,20 @@ export interface LiurenData {
   transmissionSummary?: string;
   guaTi?: string[];
   shenShaSummary?: string[];
-  tianJiangProps?: Record<string, {
-    wuxing: string;
-    yinYang: string;
-    category: string;
-    color?: string;
-    flavor?: string;
-    number?: number;
-    terrain?: string;
-    description?: string;
-    bodyPart?: string;
-  }>;
+  tianJiangProps?: Record<
+    string,
+    {
+      wuxing: string;
+      yinYang: string;
+      category: string;
+      color?: string;
+      flavor?: string;
+      number?: number;
+      terrain?: string;
+      description?: string;
+      bodyPart?: string;
+    }
+  >;
 }
 
 export interface TarotData {
@@ -585,7 +588,15 @@ export interface AlmanacData {
   timestamp: number;
 }
 
-export type LenormandSpreadType = 'single' | 'three' | 'five' | 'relationship' | 'decision' | 'nine' | 'element' | 'grandTableau';
+export type LenormandSpreadType =
+  | 'single'
+  | 'three'
+  | 'five'
+  | 'relationship'
+  | 'decision'
+  | 'nine'
+  | 'element'
+  | 'grandTableau';
 
 export interface LenormandData {
   spreadType: LenormandSpreadType;
