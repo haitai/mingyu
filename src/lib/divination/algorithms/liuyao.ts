@@ -42,22 +42,6 @@ const LIU_CHONG: Record<string, string> = {
   亥: '巳',
 };
 
-// 六合关系（地支合）：子丑合、寅亥合、卯戌合、辰酉合、巳申合、午未合
-const LIU_HE: Record<string, string> = {
-  子: '丑',
-  丑: '子',
-  寅: '亥',
-  亥: '寅',
-  卯: '戌',
-  戌: '卯',
-  辰: '酉',
-  酉: '辰',
-  巳: '申',
-  申: '巳',
-  午: '未',
-  未: '午',
-};
-
 // 地支五行
 const BRANCH_WUXING: Record<string, string> = {
   子: '水',
