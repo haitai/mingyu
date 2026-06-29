@@ -283,6 +283,21 @@ function createLiuyaoUsefulGodScoreEvidenceItems(
 ): PromptEvidenceItem[] {
   const monthBranch = getGanzhiBranch(data.ganzhi.month);
   const dayBranch = getGanzhiBranch(data.ganzhi.day);
+  // 六合关系（《增删卜易》：用神爻与月建或日辰六合为暗助）
+  const LIU_HE: Record<string, string> = {
+    子: '丑',
+    丑: '子',
+    寅: '亥',
+    亥: '寅',
+    卯: '戌',
+    戌: '卯',
+    辰: '酉',
+    酉: '辰',
+    巳: '申',
+    申: '巳',
+    午: '未',
+    未: '午',
+  };
   const candidates = createLiuyaoUsefulGodCandidates(question, data, supplementaryInfo).slice(0, 3);
   const movingYaos = data.yaosDetail.filter((item) => item.isChanging).map(formatLiuyaoYaoBrief);
   const worldYao = data.yaosDetail.find((item) => item.isWorld);
@@ -310,6 +325,12 @@ function createLiuyaoUsefulGodScoreEvidenceItems(
       primary.seasonState === '相' ? '月令相地有力' : '',
       primary.najiaDizhi === monthBranch ? '得月建同支触发' : '',
       primary.najiaDizhi === dayBranch ? '得日辰同支触发' : '',
+      LIU_HE && primary.najiaDizhi && LIU_HE[primary.najiaDizhi] === monthBranch
+        ? '得月建六合暗助'
+        : '',
+      LIU_HE && primary.najiaDizhi && LIU_HE[primary.najiaDizhi] === dayBranch
+        ? '得日辰六合暗助'
+        : '',
       primary.changeRelation === '回头生' ? '变爻回头生，愈动愈有力' : '',
       primary.changedYao ? `变出${primary.changedYao.liuqin}${primary.changedYao.dizhi}` : '',
     ].filter(Boolean);
@@ -358,6 +379,8 @@ function createLiuyaoUsefulGodScoreEvidenceItems(
     if (primary.changedYao?.isVoid) weight -= 10;
     if (primary.najiaDizhi === monthBranch) weight += 10;
     if (primary.najiaDizhi === dayBranch) weight += 10;
+    if (LIU_HE[primary.najiaDizhi] === monthBranch) weight += 8;
+    if (LIU_HE[primary.najiaDizhi] === dayBranch) weight += 8;
     weight -= index * 5;
 
     const level: PromptEvidenceItem['level'] =
