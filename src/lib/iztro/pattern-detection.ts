@@ -182,11 +182,11 @@ const PATTERN_RULES: PatternRule[] = [
     detect(context) {
       const ming = getPalaceByName(context, '命宫');
       if (!ming) return null;
+      // 三奇拱命（科权禄嘉会）按传统口径取生年四化三曜齐会命三方四正；
+      // 运限四化不并入，避免大限/流年化科权与生年化禄混算误判三奇。
       const birthMutagens = new Set(getSurroundedMutagens(context, ming, 'birth_mutagen'));
-      const scopeMutagens = new Set(getSurroundedMutagens(context, ming, 'active_scope_mutagen'));
-      const combined = new Set([...birthMutagens, ...scopeMutagens]);
       const required: Array<'禄' | '权' | '科'> = ['禄', '权', '科'];
-      if (required.every((item) => combined.has(item))) {
+      if (required.every((item) => birthMutagens.has(item))) {
         return { palaces: [ming], stars: required };
       }
       return null;
@@ -246,9 +246,9 @@ const PATTERN_RULES: PatternRule[] = [
     priority: 90,
     detect(context) {
       for (const palace of context.palaces) {
-        const hasJi = getAllStars(palace).some(
-          (star) => star.birth_mutagen === '忌' || star.active_scope_mutagen === '忌',
-        );
+        // 羊陀夹忌按传统口径取生年化忌被生年擎羊、陀罗所夹；
+        // 运限化忌不并入，避免大限/流年化忌被夹误判此凶格。
+        const hasJi = getAllStars(palace).some((star) => star.birth_mutagen === '忌');
         if (!hasJi) continue;
         const { prev, next } = getNeighborPalaces(context, palace);
         if (!prev || !next) continue;
