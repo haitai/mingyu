@@ -17,6 +17,7 @@ import type { MeihuaData, MeihuaSettings } from '../../../../types/divination';
 import { trigramsByIndex } from '../../../../utils/hexagram-data';
 import { MeihuaHelpers } from '../../../../utils/divination-helpers';
 import { getDivinationTime } from '../../../../utils/timeManager';
+import { getSeasonState } from '../_shared';
 import { findHexagramByTrigrams, resolveTiYongByMovingYao } from './helpers/hexagram';
 import {
   resolveExternalMethod,
@@ -135,12 +136,14 @@ export function generateMeihua(customDate?: Date, settings?: MeihuaSettings): Me
       | '用',
   }));
 
-  // 四时旺衰优先以节气划分；若节气异常缺失，再回退到农历月粗分四季。
+  // 四时旺衰：按《梅花易数》以月建地支定旺相休囚死，比季节粗分更精确。
+  // 复用六爻的 getSeasonState（同令→旺，令生→相，生令→休，令克→囚，克令→死）。
+  const monthBranch = ganzhi.month.slice(-1);
+  const tiSeasonState = getSeasonState(tiGua.element, monthBranch);
+  const yongSeasonState = getSeasonState(yongGua.element, monthBranch);
   const seasonByJieQi = MeihuaHelpers.getSeasonByJieQi(timeInfo.jieQi);
-  const season =
-    seasonByJieQi !== '未知' ? seasonByJieQi : MeihuaHelpers.getSeasonByMonth(lunar.monthNumber);
-  const tiSeasonState = MeihuaHelpers.getElementSeasonState(tiGua.element, season);
-  const yongSeasonState = MeihuaHelpers.getElementSeasonState(yongGua.element, season);
+  const season: '春' | '夏' | '秋' | '冬' =
+    seasonByJieQi !== '未知' ? (seasonByJieQi as '春' | '夏' | '秋' | '冬') : '春';
 
   return {
     originalName: mainHexagram.name,
