@@ -18,7 +18,7 @@ export function registerSsgwTool(server: McpServer) {
     'divine_ssgw',
     {
       description:
-        '三山国王灵签求签：模拟真实求签过程，从 100 签中随机抽取，含签题、签诗、典故故事及详细解签',
+        '三山国王灵签求签：模拟真实求签过程，从 61 签中随机抽取，含签题、签诗、典故故事及详细解签',
       inputSchema: ssgwSchema.shape,
       outputSchema: resultOutputSchema,
     },

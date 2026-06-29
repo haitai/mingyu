@@ -205,6 +205,8 @@ export function generateAstrolabe(input: AstrolabeBirthInput): AstrolabeData {
         AspectType.Trine,
         AspectType.Opposition,
       ],
+      // 相位强度过滤阈值（celestine 0-100 strength，基于容许度偏离）；
+      // 调整需结合占星容许度口径评估，调低会纳入更多弱相位、调高会丢失有效相位。
       minimumAspectStrength: 30,
     },
   );
@@ -243,7 +245,10 @@ export function generateAstrolabe(input: AstrolabeBirthInput): AstrolabeData {
       house: cusp.house,
       formatted: formatPosition(cusp.signName, cusp.degree, cusp.minute),
     })),
-    aspects: chart.aspects.all.slice(0, 12).map(mapAspect),
+    aspects: [...chart.aspects.all]
+      .sort((a, b) => b.strength - a.strength)
+      .slice(0, 12)
+      .map(mapAspect),
     summary: {
       elements: {
         火: chart.summary.elements.fire.map((item) => PLANET_LABELS[item] ?? item),

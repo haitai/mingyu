@@ -80,6 +80,7 @@ export interface MeihuaSettings {
 export interface XiaoliurenPalaceDetail {
   name: '大安' | '留连' | '速喜' | '赤口' | '小吉' | '空亡';
   index: number;
+  element: '木' | '火' | '金' | '水';
   meaning: string;
   keywords: string[];
   tendency: '宜推进' | '宜等待' | '易反复' | '易争执' | '有助力' | '易落空';
@@ -129,7 +130,10 @@ export interface LiuyaoYaoDetail extends BaseYaoDetail {
   isVoid: boolean;
   isDayBreak?: boolean;
   isMonthBreak?: boolean;
+  isHiddenMove?: boolean;
+  seasonState?: '旺' | '相' | '休' | '囚' | '死' | '平';
   changeDirection?: '化进神' | '化退神' | null;
+  changeRelation?: '回头生' | '回头克' | '回头冲' | '化空' | '比和' | null;
   changedYao?: {
     dizhi: string;
     wuxing: string;

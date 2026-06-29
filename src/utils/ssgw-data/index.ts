@@ -7,7 +7,7 @@ import { SIGNS_03 } from './signs-03';
 
 export type { SsgwSign };
 
-// 三山国王灵签数据（100签）
+// 三山国王灵签数据（共61签）
 export const SSGW_SIGNS: SsgwSign[] = [...SIGNS_01, ...SIGNS_02, ...SIGNS_03];
 
 // 获取随机签文
