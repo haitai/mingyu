@@ -875,7 +875,17 @@ function calculateTarot(input: JsonRecord) {
 }
 
 function calculateSsgw(_input: JsonRecord) {
-  return drawRandomSign();
+  const result = drawRandomSign();
+  // 三连阴杯拒绝起卦，返回结构化提示而非签文
+  if (result.ritual?.rejected) {
+    return {
+      rejected: true,
+      message: result.ritual.reason,
+      ritual: result.ritual,
+      details: result.details,
+    };
+  }
+  return result;
 }
 
 function calculateAlmanac(input: JsonRecord) {

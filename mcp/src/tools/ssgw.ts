@@ -18,7 +18,7 @@ export function registerSsgwTool(server: McpServer) {
     'divine_ssgw',
     {
       description:
-        '三山国王灵签求签：模拟真实求签过程，从 61 签中随机抽取，含签题、签诗、典故故事及详细解签',
+        '三山国王灵签求签：模拟传统摇签、掷筊流程。随机取签后掷筊确认（一阴一阳为圣杯，两平为笑杯，两凸为阴杯），圣杯确认后方为有效签文；三连阴杯则神明未应、拒绝起卦。返回签题、签诗、典故故事、解签详情及完整掷筊记录（ritual）',
       inputSchema: ssgwSchema.shape,
       outputSchema: resultOutputSchema,
     },
@@ -36,7 +36,7 @@ export function registerSsgwTool(server: McpServer) {
     'ssgw_prompt',
     {
       description:
-        '三山国王灵签求签并生成结构化 AI 解读提示词：一次调用返回灵签结果和可直接复制给 AI 的提示词',
+        '三山国王灵签求签并生成结构化 AI 解读提示词：一次调用返回灵签结果（含传统掷筊流程）和可直接复制给 AI 的提示词',
       inputSchema: ssgwPromptSchema.shape,
       outputSchema: {
         result: z.unknown().describe('灵签结果'),

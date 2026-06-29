@@ -398,6 +398,46 @@ export interface QimenData {
   };
   timeInfo: QimenTimeInfo;
   specialConditions?: QimenSpecialConditions;
+  // 新增算法字段
+  classicPatterns?: Array<{
+    name: string;
+    type: 'good' | 'bad' | 'neutral';
+    score: number;
+    summary: string;
+    palaces: number[];
+  }>;
+  stemRelations?: Array<{
+    gong: number;
+    heavenStem: string;
+    earthStem: string;
+    relation: string;
+    pattern?: string;
+  }>;
+  directions?: {
+    goodDirections: Array<{
+      gong: number;
+      name: string;
+      direction: string;
+      score: number;
+      use: string;
+      reasons: string[];
+    }>;
+    avoidDirections: Array<{
+      gong: number;
+      name: string;
+      direction: string;
+      score: number;
+      use: string;
+      reasons: string[];
+    }>;
+  };
+  yingQi?: {
+    minDays: number;
+    maxDays: number;
+    rhythm: '快' | '中' | '慢';
+    sources: string[];
+    description: string;
+  };
   timestamp: number;
 }
 
@@ -677,6 +717,16 @@ export interface AstrolabeData {
   timestamp: number;
 }
 
+export interface SsgwRitualThrow {
+  result: '圣杯' | '笑杯' | '阴杯';
+}
+
+export interface SsgwRitual {
+  throws: SsgwRitualThrow[];
+  rejected?: boolean;
+  reason?: string;
+}
+
 export interface SsgwData {
   number: number;
   title: string;
@@ -685,6 +735,7 @@ export interface SsgwData {
   details?: { [key: string]: string };
   timestamp: number;
   ganzhi: BaseGanZhi;
+  ritual?: SsgwRitual;
 }
 
 export type DivinationData =

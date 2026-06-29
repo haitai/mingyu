@@ -62,7 +62,7 @@
 | `POST /divination/liuren/prompt`     | 大六壬排盘并生成 AI 解读提示词       |
 | `POST /divination/tarot`             | 塔罗抽牌                             |
 | `POST /divination/tarot/prompt`      | 塔罗抽牌并生成 AI 解读提示词         |
-| `POST /divination/ssgw`              | 三山国王灵签求签                     |
+| `POST /divination/ssgw`              | 三山国王灵签求签：模拟传统摇签、掷筊流程，圣杯确认后方出签；三连阴杯则拒绝起卦 |
 | `POST /divination/ssgw/prompt`       | 三山国王灵签求签并生成 AI 解读提示词 |
 | `POST /divination/almanac`           | 黄历择日                             |
 | `POST /divination/almanac/prompt`    | 黄历择日并生成 AI 解读提示词         |

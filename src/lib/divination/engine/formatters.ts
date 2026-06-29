@@ -1696,6 +1696,18 @@ function formatTarotInfo(data: TarotData) {
 }
 
 function formatSsgwInfo(data: SsgwData) {
+  // 三连阴杯拒绝起卦
+  if (data.ritual?.rejected) {
+    const throwLog = data.ritual.throws.map((t) => t.result).join(' → ');
+    return (
+      '占法：三山国王灵签\n' +
+      `时间干支：${formatGanzhi(data.ganzhi).replace('干支：', '')}\n` +
+      `掷筊记录：${throwLog}\n` +
+      `结果：${data.ritual.reason}\n\n` +
+      '神明未应，本次不起卦。建议稍后再试，或反思所问是否妥当。'
+    );
+  }
+
   const { canonicalStory, extraStory } = resolveSsgwStoryContent(data);
   const detailLines = data.details
     ? Object.entries(data.details)
