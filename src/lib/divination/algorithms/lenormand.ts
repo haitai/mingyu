@@ -199,8 +199,8 @@ const SPREADS: Record<LenormandSpreadType, { name: string; positions: string[] }
     positions: ['左上', '上方', '右上', '左侧', '核心', '右侧', '左下', '下方', '右下'],
   },
   element: {
-    name: '五行牌阵',
-    positions: ['木（根基/成长）', '火（行动/热情）', '土（稳定/现实）', '金（决断/边界）', '水（流动/直觉）'],
+    name: '元素牌阵',
+    positions: ['火（行动/能量）', '水（情感/直觉）', '风（思维/沟通）', '土（物质/根基）'],
   },
   grandTableau: {
     name: '大桌牌阵',
