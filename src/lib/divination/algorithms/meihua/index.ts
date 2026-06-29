@@ -213,11 +213,22 @@ export function generateMeihua(customDate?: Date, settings?: MeihuaSettings): Me
       tiSeasonState,
       yongSeasonState,
       // 2. 互卦与体卦关系：代表事情发展的过程。互卦有二，需分别论之。
-      // 口径说明：取互下、互上两经卦各自对原体卦论生克（两互各论克体），作辅助参考；
-      // 正统梅花互卦另有体用定法（互卦以原动爻位定互体互用），此处为简化口径。
-      inter1Relation: interLowerResult
-        ? MeihuaHelpers.getElementRelation(interLowerResult.trigram.element, tiGua.element)
-        : '无',
+      // 传统梅花互卦体用定法（《梅花易数》原旨）：
+      // 原动爻在下卦（1/2/3爻）→互卦的下卦为互体、上卦为互用；
+      // 原动爻在上卦（4/5/6爻）→互卦的上卦为互体、下卦为互用。
+      // 以互用对互体论生克，反映事态发展过程中的关键关系。
+      inter1Relation:
+        interLowerResult && interUpperResult
+          ? MeihuaHelpers.getElementRelation(
+              movingYaoIndex <= 3
+                ? interUpperResult.trigram.element
+                : interLowerResult.trigram.element,
+              movingYaoIndex <= 3
+                ? interLowerResult.trigram.element
+                : interUpperResult.trigram.element,
+            )
+          : '无',
+      // 另一互卦经卦对原体卦的辅助关系（非正统，仅作参考）
       inter2Relation: interUpperResult
         ? MeihuaHelpers.getElementRelation(interUpperResult.trigram.element, tiGua.element)
         : '无',
