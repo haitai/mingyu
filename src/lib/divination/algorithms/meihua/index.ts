@@ -212,8 +212,7 @@ export function generateMeihua(customDate?: Date, settings?: MeihuaSettings): Me
     isChanging: index === movingYaoIndex - 1,
     // 标注体用，并进行类型断言
     tiYong: ((index < 3 ? lowerTrigram.name : upperTrigram.name) === tiGua.name ? '体' : '用') as
-      | '体'
-      | '用',
+      '体' | '用',
   }));
 
   // 四时旺衰：按《梅花易数》以月建地支定旺相休囚死，比季节粗分更精确。

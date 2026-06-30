@@ -440,7 +440,11 @@ export function getOppositeBranch(branch: string): string {
  */
 export function getWuxingChangSheng(wuxing: string): string {
   const map: Record<string, string> = {
-    木: '亥', 火: '寅', 土: '寅', 金: '巳', 水: '申'
+    木: '亥',
+    火: '寅',
+    土: '寅',
+    金: '巳',
+    水: '申',
   };
   return map[wuxing] || '';
 }
