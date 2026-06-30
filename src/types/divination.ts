@@ -20,14 +20,7 @@ export type XiaoliurenDivinationMethod = 'time' | 'number' | 'random';
 export type MeihuaExternalDirection = '东' | '东南' | '南' | '西南' | '西' | '西北' | '北' | '东北';
 
 export type MeihuaExternalPerson =
-  | '老父'
-  | '老妇'
-  | '长男'
-  | '长女'
-  | '中男'
-  | '中女'
-  | '少男'
-  | '少女';
+  '老父' | '老妇' | '长男' | '长女' | '中男' | '中女' | '少男' | '少女';
 
 export type MeihuaExternalAnimal = '马' | '牛' | '龙' | '鸡' | '猪' | '雉' | '狗' | '羊';
 
@@ -52,14 +45,7 @@ export type MeihuaExternalSound =
   | '清脆笑语';
 
 export type MeihuaExternalColor =
-  | '金白'
-  | '土黄'
-  | '青碧'
-  | '青绿'
-  | '黑蓝'
-  | '赤紫'
-  | '棕黄'
-  | '银白';
+  '金白' | '土黄' | '青碧' | '青绿' | '黑蓝' | '赤紫' | '棕黄' | '银白';
 
 export interface MeihuaExternalOmens {
   direction?: MeihuaExternalDirection;
@@ -629,14 +615,7 @@ export interface AlmanacData {
 }
 
 export type LenormandSpreadType =
-  | 'single'
-  | 'three'
-  | 'five'
-  | 'relationship'
-  | 'decision'
-  | 'nine'
-  | 'element'
-  | 'grandTableau';
+  'single' | 'three' | 'five' | 'relationship' | 'decision' | 'nine' | 'element' | 'grandTableau';
 
 export interface LenormandData {
   spreadType: LenormandSpreadType;

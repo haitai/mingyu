@@ -63,8 +63,7 @@ export interface UseWorkerRequestResult<TRes> {
 }
 
 type WorkerEnvelope<TRes> =
-  | ({ id: string; ok: true } & TRes)
-  | { id: string; ok: false; error?: string };
+  ({ id: string; ok: true } & TRes) | { id: string; ok: false; error?: string };
 
 /**
  * 通用 Worker 请求 hook:

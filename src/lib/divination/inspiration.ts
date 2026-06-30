@@ -1,13 +1,7 @@
 import type { DivinationDraft } from './engine';
 
 export type DivinationInspirationTabId =
-  | 'spread'
-  | 'special'
-  | 'ganqing'
-  | 'shiye'
-  | 'caifu'
-  | 'renji'
-  | 'rensheng';
+  'spread' | 'special' | 'ganqing' | 'shiye' | 'caifu' | 'renji' | 'rensheng';
 
 export type DivinationInspirationTab = {
   id: Exclude<DivinationInspirationTabId, 'spread' | 'special'>;

@@ -16,7 +16,8 @@ export class WuxingCalculator {
     const rawStrength = this._calculateRawStrength(pillars);
     const weightedStrength = this._applyMonthWeights(rawStrength, pillars.month.zhi);
 
-    // 月令司权之神额外加权：当前司令之干的五行 +20%（《三命通会》月令司权最旺）
+    // 月令司权之神额外加权：当前司令之干的五行 +20%
+    // 注：此为自定义量化方案，传统命理以司权当旺定性而非定量
     if (monthCommander) {
       const commanderWuxing = getWuxingUtil(monthCommander);
       if (commanderWuxing !== '未知' && weightedStrength[commanderWuxing] !== undefined) {

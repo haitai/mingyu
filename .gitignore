@@ -1,6 +1,9 @@
 # 依赖目录
 node_modules/
 
+# npm lockfile（本项目改用 pnpm，npm lockfile 不再维护）
+package-lock.json
+
 # 构建产物
 dist/
 

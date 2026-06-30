@@ -40,7 +40,7 @@ OpenAPI：[https://aov.cc/api/v1/openapi.json](https://aov.cc/api/v1/openapi.jso
 - 自定起卦时间：六爻、梅花易数、奇门遁甲、大六壬、小六壬可在网页端选择当前时间或自定北京时间；公开 API、MCP Server 和 skill 使用 `customDate` 传入带时区的 ISO 8601 时间。
 - 塔罗牌：78 张塔罗牌，支持单牌、时间流、爱情、事业、选择等牌阵。
 - 雷诺曼：36 张雷诺曼牌，支持单牌、时间流、爱情、事业、选择等牌阵。
-- 三山国王灵签：61 签灵签，包含签题、签诗、典故故事与分类解签。
+- 三山国王灵签：92 签灵签，源自广东潮汕三山国王祖庙，包含签题、签诗、典故故事与分类解签，体系完备。
 
 ### 择吉择日
 
@@ -126,6 +126,51 @@ Invoke-WebRequest "https://aov.cc/skills/aov-mingyu-api/SKILL.md" `
 
 元数据发现：[https://aov.cc/.well-known/aov-mingyu-api.json](https://aov.cc/.well-known/aov-mingyu-api.json)
 
+## 核心算法包 `mingyu-core`
+
+命语的所有命理排盘与占卜算法已抽取为独立 npm 包 [`mingyu-core`](https://www.npmjs.com/package/mingyu-core)，本仓库以 pnpm workspace 形式同时维护应用与算法包。
+
+```text
+mingyu/
+├── packages/
+│   └── core/                  # mingyu-core 算法包（独立发布到 npm）
+└── src/                       # 应用层（React + Vite + MCP）
+```
+
+安装：
+
+```bash
+npm install mingyu-core
+```
+
+使用示例：
+
+```ts
+// 八字排盘
+import { baziCalculator } from 'mingyu-core/bazi';
+
+const result = baziCalculator.calculateBazi({
+  year: 1990, month: 1, day: 1, timeIndex: 5, gender: 'male',
+});
+
+// 占卜算法
+import { generateLiuyao } from 'mingyu-core/divination/liuyao';
+import { generateQimen } from 'mingyu-core/divination/qimen';
+import { generateLiuren } from 'mingyu-core/divination/liuren';
+
+// 历法工具
+import { getDivinationTime, getVoidBranches } from 'mingyu-core/calendar';
+
+// 类型
+import type { BaziChartResult, QimenData, LiurenData } from 'mingyu-core/types';
+```
+
+包覆盖能力：八字（含调候用神、格局、神煞、大运及透干根气、十神结构、合化评估、命卦、小运等增强分析）、奇门遁甲、六爻、大六壬、梅花易数、小六壬、紫微斗数、西洋占星、择日、雷诺曼、塔罗、三山国王灵签。
+
+**⚠️ 免责：** 该包仅提供算法实现，所有结果仅供参考与学习娱乐，不构成任何命理预测或专业建议。
+
+算法包详细文档：[packages/core/README.md](packages/core/README.md)
+
 ## 技术栈
 
 | 类别 | 技术 |
@@ -133,8 +178,9 @@ Invoke-WebRequest "https://aov.cc/skills/aov-mingyu-api/SKILL.md" `
 | 前端 | React 19、TypeScript 5.9 |
 | 构建 | Vite 7 |
 | 路由 | React Router 7 |
+| 包管理 | pnpm workspace（应用层 + `mingyu-core` 算法包） |
 | 部署 | Cloudflare Pages、Pages Functions |
-| 历法与星盘 | `tyme4ts`、`iztro` |
+| 历法与星盘 | `tyme4ts`、`iztro`、`celestine` |
 | 数据校验 | `zod` |
 | 测试 | Node.js 原生测试运行器 |
 | AI 集成 | MCP Server、OpenAPI、skill 文档 |
@@ -145,6 +191,12 @@ Invoke-WebRequest "https://aov.cc/skills/aov-mingyu-api/SKILL.md" `
 mingyu/
 ├── functions/                 # Cloudflare Pages Functions 公开 API
 ├── mcp/                       # MCP Server
+├── packages/
+│   └── core/                  # mingyu-core 独立算法包（发布到 npm）
+│       ├── src/bazi/          # 八字引擎与增强分析
+│       ├── src/divination/    # 占卜算法（六爻/奇门/六壬/梅花等）
+│       ├── src/calendar/      # 历法工具
+│       └── src/types/         # 共享类型
 ├── public/
 │   ├── .well-known/           # 公开发现元数据
 │   └── skills/                # 公开 skill 文档
@@ -165,34 +217,46 @@ mingyu/
 
 ## 本地开发
 
+本项目使用 pnpm workspace 管理应用层与 `mingyu-core` 算法包，需先安装 [pnpm](https://pnpm.io)：
+
+```bash
+npm install -g pnpm
+```
+
 安装依赖：
 
 ```bash
-npm install
+pnpm install
 ```
 
 启动网页开发服务：
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 启动 MCP Server：
 
 ```bash
-npm run mcp
+pnpm mcp
 ```
 
 构建生产版本：
 
 ```bash
-npm run build
+pnpm build
 ```
 
 运行测试：
 
 ```bash
-npm test
+pnpm test
+```
+
+单独构建 `mingyu-core` 算法包：
+
+```bash
+pnpm --filter mingyu-core build
 ```
 
 类型检查 MCP 与共享源码：
@@ -247,6 +311,18 @@ npm run contest:evaluate -- --format chat --url https://openrouter.ai/api/v1 --k
 - 增加更多 AI 客户端的 MCP 配置示例。
 - 扩展 skill，使更多代理能自动发现并调用命语。
 - 增强移动端体验、可访问性和教程说明。
+
+## 关于三山国王
+
+三山国王是粤东潮汕与客家地区极具影响力的民间信仰，祖庙位于**广东揭西县河婆街道**。这座有着千年历史的庙宇供奉着巾山、明山、独山三位山神，自隋代至今香火不断，影响远播东南亚。
+
+项目作者来自揭西，自幼祭拜三山国王。这套**92 签灵签体系**正是以祖庙传承的签诗为本，结合正史典故与民间传说整理而成：
+
+- 39 支上签、30 支中签、21 支下签、2 支无事签，签序暗合"始于进取，终于守成"的人生智慧
+- 每签配有签题、签诗、典故故事与多领域解签
+- 第 91、92 签为独有的"无事签"——其他签诗体系几乎没有，体现了三山文化"无事即福"的朴素智慧
+
+我们希望这套签文能成为一本"人生操作手册"——迷茫时翻开，总有一支签、一句诗，能让人豁然开朗。
 
 ## 免责声明
 
