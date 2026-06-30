@@ -1476,7 +1476,10 @@ function formatQimenInfo(question: string, data: QimenData, supplementaryInfo?: 
             ),
         )
         .slice(0, 4)
-        .map((item) => `${item.heavenStem}${item.earthStem}落${item.gong}宫：${item.relation}，${item.pattern}`)
+        .map(
+          (item) =>
+            `${item.heavenStem}${item.earthStem}落${item.gong}宫：${item.relation}，${item.pattern}`,
+        )
         .join('；')
     : '';
   // 方向吉凶建议——由算法按用神落宫评分的结构化方位数据
@@ -1484,7 +1487,14 @@ function formatQimenInfo(question: string, data: QimenData, supplementaryInfo?: 
     ? `吉方${data.directions.goodDirections
         .slice(0, 3)
         .map((d) => `${d.direction}（${d.name}：${d.use}）`)
-        .join('、')}${data.directions.avoidDirections?.length ? `；避${data.directions.avoidDirections.slice(0, 2).map((d) => d.direction).join('、')}` : ''}`
+        .join('、')}${
+        data.directions.avoidDirections?.length
+          ? `；避${data.directions.avoidDirections
+              .slice(0, 2)
+              .map((d) => d.direction)
+              .join('、')}`
+          : ''
+      }`
     : '';
   const palaceSummary =
     data.palaceInsights?.map((item) => `${item.name}${item.level}，${item.summary}`).join('；') ||
@@ -1660,14 +1670,6 @@ function formatLiurenInfo(data: LiurenData) {
   const voidHits = data.threeTransmissions
     .filter((item) => data.xunKong?.includes(item.branch))
     .map((item) => `${item.stage}${item.branch}`);
-  const auxiliaryEvidence = [
-    data.guaTi?.length ? `课体${data.guaTi.join('、')}` : '',
-    data.patternTags?.length ? `标签${data.patternTags.join('、')}` : '',
-    data.shenShaSummary?.length ? `神煞${data.shenShaSummary.join('；')}` : '',
-    data.xunKong?.length
-      ? `旬空${data.xunKong.join('、')}${voidHits.length ? `，命中${voidHits.join('、')}` : ''}`
-      : '',
-  ].filter(Boolean);
   const summaryText = [data.lessonSummary, data.transmissionSummary, data.transmissionDetail]
     .filter(Boolean)
     .join('；');
@@ -1714,9 +1716,7 @@ function formatLiurenInfo(data: LiurenData) {
   const shenShaCategorized = data.shenShaSummary?.length
     ? (() => {
         const yearSha = data.shenShaSummary.filter((s) => s.includes('年'));
-        const monthSha = data.shenShaSummary.filter(
-          (s) => s.includes('德') || s.includes('马'),
-        );
+        const monthSha = data.shenShaSummary.filter((s) => s.includes('德') || s.includes('马'));
         const daySha = data.shenShaSummary.filter(
           (s) => !s.includes('年') && !s.includes('德') && !s.includes('马'),
         );
@@ -1801,7 +1801,9 @@ function formatTarotInfo(data: TarotData) {
     '占法：塔罗',
     '时间干支：以【当前时间】为准',
     `核心结构：牌阵${data.spreadName}；共${data.cards.length}张牌`,
-    spreadSpecificHint[data.spreadType as string] ? `读取策略：${spreadSpecificHint[data.spreadType as string]}` : '',
+    spreadSpecificHint[data.spreadType as string]
+      ? `读取策略：${spreadSpecificHint[data.spreadType as string]}`
+      : '',
     '断牌抓手：先统合牌阵主轴，再看关键位置、正逆位变化与牌面呼应',
     `主轴证据：${focusParts.join('；') || '牌面主轴未定位'}`,
     `辅助证据：${auxiliaryParts.join('；') || '暂无辅助证据'}`,
