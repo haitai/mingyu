@@ -434,10 +434,21 @@ export function getOppositeBranch(branch: string): string {
   return LIUCHONG_MAP[branch] || branch;
 }
 
-/** 获取地支的三合局中对应长生位 */
-export function getChangSheng(branch: string): string {
+/**
+ * 获取五行长生位地支
+ * 木长生在亥、火长生在寅、金长生在巳、水长生在申、土长生在寅（火土同宫）
+ */
+export function getWuxingChangSheng(wuxing: string): string {
   const map: Record<string, string> = {
-    寅: '亥', // 火局长生在寅，但其本身为取用
+    木: '亥', 火: '寅', 土: '寅', 金: '巳', 水: '申'
   };
+  return map[wuxing] || '';
+}
+
+/**
+ * @deprecated 请使用 getWuxingChangSheng 或 qimen/helpers/chang-sheng.ts 中的 getChangSheng
+ */
+export function getChangSheng(branch: string): string {
+  const map: Record<string, string> = { 寅: '亥' };
   return map[branch] || '';
 }

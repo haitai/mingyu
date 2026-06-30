@@ -83,6 +83,8 @@ export const BASIC_MAPPINGS: {
     壬: '丙',
     丁: '癸',
     癸: '丁',
+    戊: '己',
+    己: '戊',
   },
   DI_ZHI_LIU_HE: {
     子: '丑',

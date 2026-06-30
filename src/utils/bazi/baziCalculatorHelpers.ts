@@ -88,6 +88,11 @@ export function calculateKongWang(pillars: Pillars): KongWangResult {
   return result;
 }
 
+/**
+ * 计算自坐（十二长生在四柱的表现）
+ * 与 calculatePillarLifeStages 逻辑相同。
+ * @deprecated 请使用 calculatePillarLifeStages
+ */
 export function calculateZiZuo(pillars: Pillars): ZiZuoResult {
   const result = {} as ZiZuoResult;
   (Object.keys(pillars) as Array<keyof Pillars>).forEach((key) => {
