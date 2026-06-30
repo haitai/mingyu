@@ -1347,14 +1347,27 @@ function formatMeihuaInfo(data: MeihuaData) {
     .sort((a, b) => b.position - a.position)
     .map(
       (item) =>
-        `- 第${item.position}爻：${item.yaoType}爻，属${item.tiYong}${item.isChanging ? '，动' : '，静'}`,
+        `- 第${item.position}爻（${data.movingYao.position === item.position ? '动' : '静'}，属${item.tiYong}）：${item.yaoType}爻${data.mainHexagram?.yaoCi?.[item.position - 1] ? `，爻辞"${data.mainHexagram.yaoCi[item.position - 1]}"` : ''}`,
     );
+
+  // 动爻逐条输出爻辞（多动爻时更完整）
+  const movingYaoCiLines = data.mainHexagram?.yaoCi
+    ? data.yaosDetail
+        .filter((item) => item.isChanging)
+        .map((item) => `第${item.position}爻爻辞：${data.mainHexagram!.yaoCi![item.position - 1]}`)
+    : [];
+
+  // 应期数组输出（结构化 yingQi 优先于手写）
+  const yingQiText = data.analysis.yingQi?.length
+    ? `应期参考：${data.analysis.yingQi.slice(0, 3).join('；')}`
+    : null;
 
   return [
     '占法：梅花易数',
     `时间干支：${formatGanzhi(data.ganzhi).replace('干支：', '')}`,
     `核心结构：主卦${data.originalName}${data.mainHexagram?.description ? `（${data.mainHexagram.description}）` : ''}；互卦${data.interName || '无'}${data.interHexagram?.description ? `（${data.interHexagram.description}）` : ''}；变卦${data.changedName || '无'}${data.changedHexagram?.description ? `（${data.changedHexagram.description}）` : ''}`,
     data.mainHexagram?.movingYaoCi ? `动爻爻辞：${data.mainHexagram.movingYaoCi}` : '',
+    ...(movingYaoCiLines.length > 1 ? movingYaoCiLines : []),
     '断卦抓手：先定体用，再看互卦过程、变卦结果与四时旺衰',
     `主轴证据：体卦${data.tiGua.name}（${data.tiGua.element}）；用卦${data.yongGua.name}（${data.yongGua.element}）；动爻第${data.movingYao.position}爻；体用关系${data.analysis.tiYongRelation}`,
     `体用评分：${scoringEvidence}`,
@@ -1363,7 +1376,7 @@ function formatMeihuaInfo(data: MeihuaData) {
     `互变阶段：${stageEvidence}`,
     `辅助证据：四时${data.analysis.season}季，体卦${data.analysis.tiSeasonState}，用卦${data.analysis.yongSeasonState}；起卦法${methodLabel}${typeof calculation?.number === 'number' ? `；起卦数字${calculation.number}` : ''}`,
     `外应置信度：${externalConfidenceEvidence}`,
-    `应期候选：${timingEvidence}`,
+    yingQiText || `应期候选：${timingEvidence}`,
     `应期优先级：${timingPriorityEvidence}`,
     `类象权重：${symbolEvidence}`,
     isExternalMethod && hasExternalSummary ? `外应：${externalSummary}` : '',
@@ -1739,6 +1752,18 @@ function formatLiurenInfo(data: LiurenData) {
 }
 
 function formatTarotInfo(data: TarotData) {
+  // 牌阵类型决定读取策略
+  const spreadSpecificHint: Record<string, string> = {
+    love: '感情牌阵优先看牌面情感基调、人物牌互动和阻碍位',
+    career: '事业牌阵优先看行动位、资源位和结果位的呼应',
+    decision: '选择牌阵优先看选项对比、关键建议位和潜在风险',
+    three: '三牌时间流优先看过去成因→当下关键→未来趋势的承接',
+    celtic: '凯尔特十字优先看核心问题位、外界影响和最终结果',
+    chakra: '脉轮牌阵优先看顶轮（大方向）和海底轮（根基）的能量流向',
+    year: '年运牌阵优先看第一季度的行动位和第四季度的收获位',
+    mindBodySpirit: '身心灵魂牌阵优先看身（现实）和灵（方向）两个极位',
+    horseshoe: '马蹄铁牌阵优先看过去、现在、隐藏因素和结果四个关键锚点',
+  };
   const focusCards = getTarotFocusCards(data);
   const focusParts = focusCards.map((card) => formatTarotCardLabel(card));
   const auxiliaryParts = [
@@ -1776,6 +1801,7 @@ function formatTarotInfo(data: TarotData) {
     '占法：塔罗',
     '时间干支：以【当前时间】为准',
     `核心结构：牌阵${data.spreadName}；共${data.cards.length}张牌`,
+    spreadSpecificHint[data.spreadType as string] ? `读取策略：${spreadSpecificHint[data.spreadType as string]}` : '',
     '断牌抓手：先统合牌阵主轴，再看关键位置、正逆位变化与牌面呼应',
     `主轴证据：${focusParts.join('；') || '牌面主轴未定位'}`,
     `辅助证据：${auxiliaryParts.join('；') || '暂无辅助证据'}`,
@@ -1786,8 +1812,7 @@ function formatTarotInfo(data: TarotData) {
     `叙事权重：${narrativeWeightEvidence}`,
     `牌间叙事：${relationText || '牌数不足时只按单牌与问题关系解释'}`,
     '现实边界：塔罗只能给当下倾向、心理动力、互动节奏和行动建议；未给期限时不把牌义硬换成绝对日期',
-    relationText ? `位置关系：${relationText}` : '',
-    '结构明细：',
+    '牌位明细：',
     ...cardLines,
   ]
     .filter(Boolean)

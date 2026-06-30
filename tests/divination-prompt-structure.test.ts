@@ -898,7 +898,7 @@ test('梅花提示词会给出体用主轴、过程结果与起卦细节', () =>
   assert.doesNotMatch(prompt, /起卦类别：number/);
   assert.doesNotMatch(prompt, /- 起卦方式：数字起卦法/);
   assert.doesNotMatch(prompt, /- 起卦数字：123/);
-  assert.match(prompt, /- 第3爻：阳爻，属体，动/);
+  assert.match(prompt, /第3爻.*动.*属体/);
 });
 
 test('梅花外应起卦会带外应映射与原始外应信息', () => {
@@ -1167,7 +1167,6 @@ test('塔罗提示词会给出牌阵主轴、位置关系与行动建议抓手',
   assert.match(prompt, /权重口径：先牌位，后正逆位，再用关键词互证/);
   assert.match(prompt, /牌间叙事：现状先提示选择与连接，建议位再看如何调整控制与节奏/);
   assert.match(prompt, /现实边界：塔罗只能给当下倾向、心理动力、互动节奏和行动建议/);
-  assert.match(prompt, /位置关系：现状先提示选择与连接，建议位再看如何调整控制与节奏/);
   assert.doesNotMatch(prompt, /关键提示：重点关注各位置含义、正逆位变化与牌面之间的呼应关系/);
   assert.match(prompt, /- 现状：恋人（正位），关键词：选择、连接/);
   assert.match(prompt, /- 建议：战车（逆位），关键词：控制、节奏/);
