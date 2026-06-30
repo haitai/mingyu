@@ -1833,6 +1833,10 @@ function formatSsgwInfo(data: SsgwData) {
   }
 
   const { canonicalStory, extraStory } = resolveSsgwStoryContent(data);
+  // 非拒绝状态下的掷筊记录（神明已应）
+  const ritualLog = data.ritual?.throws?.length
+    ? `掷筊记录：${data.ritual.throws.map((t) => t.result).join(' → ')}${data.ritual.reason ? `（${data.ritual.reason}）` : ''}`
+    : '';
   const detailLines = data.details
     ? Object.entries(data.details)
         .filter(([key]) => key !== '典故')
@@ -1881,6 +1885,7 @@ function formatSsgwInfo(data: SsgwData) {
     `核心结构：第${data.number}签；签题《${data.title}》`,
     '断签抓手：先定签诗主旨，再看典故映射、现实处境与宜进宜守',
     `主轴证据：签诗“${data.poem}”`,
+    ritualLog,
     `辅助证据：${auxiliaryParts.join('；') || '暂无辅助证据'}`,
     poemParts.length
       ? `逐句签意：${poemParts.map((item, index) => `第${index + 1}句${item}`).join('；')}`
@@ -2016,14 +2021,22 @@ function formatAlmanacInfo(data: AlmanacData) {
     return `- ${item.name}：${item.gender || '性别未填'}，公历${item.solarDate}，农历${item.lunarDate}，生肖${item.zodiac}，日主${item.dayMaster}${item.dayMasterElement}，四柱${item.pillars.year}年 ${item.pillars.month}月 ${item.pillars.day}日 ${item.pillars.hour}时，喜用参考${useful}，忌神参考${avoid}`;
   });
   const dayLines = topDays.map((item, index) => {
+    const starDetail = item.twentyEightStarDetail
+      ? `（${item.twentyEightStarDetail.wuxing}，${item.twentyEightStarDetail.fortune}，${item.twentyEightStarDetail.meaning}）`
+      : '';
+    const nineStarDetail = item.nineStarDetail
+      ? `（${item.nineStarDetail.wuxing}，${item.nineStarDetail.fortune}，${item.nineStarDetail.meaning}）`
+      : '';
+    const godText = item.gods.length ? `吉神${item.gods.join('、')}` : '';
     const evidence = [
       `宜${item.recommends.slice(0, 8).join('、') || '无'}`,
       `忌${item.avoids.slice(0, 8).join('、') || '无'}`,
+      godText,
       item.highlights.length ? `加分${item.highlights.join('、')}` : '',
       item.cautions.length ? `风险${item.cautions.join('、')}` : '',
       item.participantNotes.length ? `参与人${item.participantNotes.join('；')}` : '',
     ].filter(Boolean);
-    return `- 第${index + 1}候选：${item.date} ${item.weekday}，${item.lunarDate}，${item.ganzhi.year}年 ${item.ganzhi.month}月 ${item.ganzhi.day}日，评分${item.score}；${item.dayOfficer}执日，十二神${item.twelveStar}，二十八宿${item.twentyEightStar}，${item.clash}；${evidence.join('；')}`;
+    return `- 第${index + 1}候选：${item.date} ${item.weekday}，${item.lunarDate}，${item.ganzhi.year}年 ${item.ganzhi.month}月 ${item.ganzhi.day}日，评分${item.score}；${item.dayOfficer}执日，十二神${item.twelveStar}，二十八宿${item.twentyEightStar}${starDetail}，九星${item.nineStar}${nineStarDetail}，${item.clash}；${evidence.join('；')}`;
   });
   const bestDay = topDays[0];
   const backupDays = topDays.slice(1, 3);
