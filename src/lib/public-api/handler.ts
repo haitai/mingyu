@@ -1,4 +1,5 @@
 import { baziCalculator } from '../../utils/bazi/baziCalculator';
+import type { ShenShaVariantConfig } from '../../utils/bazi/baziShenSha';
 import type { Person } from '../../utils/bazi/baziTypes';
 import { getTimeIndexFromClock } from 'mingyu-core/calendar';
 import {
@@ -62,6 +63,7 @@ import {
   type ZiweiPromptTopic,
   type ZiweiSchool,
 } from './prompt-builders';
+import { handleAiAnalyze, handleAiModels, type AiEnv } from '../ai/proxy';
 
 const API_VERSION = 'v1';
 const SERVICE_NAME = 'aov.cc';
@@ -89,9 +91,14 @@ type ApiFailure = {
 
 type JsonRecord = Record<string, unknown>;
 
+const SHENSHA_KONG_WANG_BASIS = ['day', 'day-and-year'] as const;
+const SHENSHA_YANG_REN_MODE = ['yang-stems-only', 'include-yin-ren'] as const;
+const SHENSHA_TONG_ZI_SCOPE = ['day-hour', 'all-pillars'] as const;
+
 type RouteContext = {
   request: Request;
   segments: string[];
+  env?: AiEnv;
 };
 
 class ApiError extends Error {
@@ -144,6 +151,8 @@ const ENDPOINTS = [
   'POST /api/v1/divination/lenormand/prompt',
   'POST /api/v1/divination/astrolabe',
   'POST /api/v1/divination/astrolabe/prompt',
+  'POST /api/v1/ai/analyze',
+  'POST /api/v1/ai/models',
 ] as const;
 
 const DIVINATION_METHODS = [
@@ -447,9 +456,104 @@ export function getPublicApiOpenApiDocument() {
           responses: { '200': { description: '占卜结果、统一摘要和结构化提示词' } },
         },
       },
+      '/ai/analyze': {
+        post: {
+          summary: 'AI 解读（流式 SSE）',
+          description:
+            '接收提示词或对话消息，调用 OpenAI 兼容的 Chat API 进行流式解析，返回 SSE 流。' +
+            '支持两种请求格式：1) { prompt: string } 单轮解析；' +
+            '2) { messages: Array<{role, content}> } 多轮对话（追问仅限当前解析主题）。',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    prompt: {
+                      type: 'string',
+                      description: '完整的提示词文本（单轮模式）',
+                    },
+                    messages: {
+                      type: 'array',
+                      description: '对话消息数组（多轮模式，优先于 prompt）',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          role: {
+                            type: 'string',
+                            enum: ['user', 'assistant'],
+                          },
+                          content: { type: 'string' },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            '200': {
+              description: 'SSE 流式响应，data 字段包含 { content: string } 增量。',
+            },
+          },
+        },
+      },
+      '/ai/models': {
+        post: {
+          summary: '获取 AI 模型列表',
+          description: '按服务端 AI 或用户自行配置的 OpenAI 兼容接口获取模型列表。',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    aiConfig: {
+                      type: 'object',
+                      properties: {
+                        mode: { enum: ['builtin', 'custom'] },
+                        apiKey: { type: 'string' },
+                        baseUrl: { type: 'string' },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            '200': {
+              description: '模型列表，返回 { ok: true, models: string[] }。',
+            },
+          },
+        },
+      },
     },
     components: {
       schemas: {
+        ShenShaVariants: {
+          type: 'object',
+          description:
+            '可选。神煞争议口径配置；不传时使用默认主流口径。只影响已声明的争议神煞算法，不改变基础历法与干支排盘。',
+          properties: {
+            kongWangBasis: {
+              enum: [...SHENSHA_KONG_WANG_BASIS],
+              description: '空亡口径：day=只按日柱旬空；day-and-year=日柱与年柱旬空并参。',
+            },
+            yangRenMode: {
+              enum: [...SHENSHA_YANG_REN_MODE],
+              description:
+                '羊刃口径：yang-stems-only=只取阳干羊刃；include-yin-ren=阴干帝旺位作为阴刃并入。',
+            },
+            tongZiScope: {
+              enum: [...SHENSHA_TONG_ZI_SCOPE],
+              description: '童子煞口径：day-hour=只查日柱时柱；all-pillars=四柱同查。',
+            },
+          },
+        },
         BaziRequest: {
           type: 'object',
           required: ['gender', 'year', 'month', 'day', 'dateType'],
@@ -466,6 +570,7 @@ export function getPublicApiOpenApiDocument() {
             birthMinute: { type: 'integer', minimum: 0, maximum: 59 },
             birthPlace: { type: 'string' },
             birthLongitude: { type: 'number', minimum: -180, maximum: 180 },
+            shenShaVariants: { $ref: '#/components/schemas/ShenShaVariants' },
           },
         },
         BaziPromptRequest: {
@@ -550,7 +655,7 @@ export function normalizeApiPath(pathname: string) {
     .filter(Boolean);
 }
 
-export async function handlePublicApiRequest(request: Request, segments?: string[]) {
+export async function handlePublicApiRequest(request: Request, segments?: string[], env?: AiEnv) {
   if (request.method === 'OPTIONS') {
     return new Response(null, {
       status: 204,
@@ -560,8 +665,17 @@ export async function handlePublicApiRequest(request: Request, segments?: string
 
   const routeSegments = segments ?? normalizeApiPath(new URL(request.url).pathname);
 
+  // AI 解析走独立的 SSE 流式响应，不经过 JSON 包装
+  if (routeSegments.join('/') === 'ai/analyze' && request.method === 'POST') {
+    return handleAiAnalyze(request, env);
+  }
+
+  if (routeSegments.join('/') === 'ai/models' && request.method === 'POST') {
+    return handleAiModels(request, env);
+  }
+
   try {
-    const data = await route({ request, segments: routeSegments });
+    const data = await route({ request, segments: routeSegments, env });
     return json(success(data));
   } catch (error) {
     return handleError(error);
@@ -673,6 +787,7 @@ function calculateBazi(input: JsonRecord) {
     birthMinute,
     birthLongitude,
     birthPlace: readString(input, 'birthPlace', ''),
+    shenShaVariants: readShenShaVariants(input),
   };
 
   if (useTrueSolarTime && derivedTimeIndex < 0) {
@@ -681,6 +796,25 @@ function calculateBazi(input: JsonRecord) {
 
   const result = baziCalculator.calculateBazi(person);
   return result;
+}
+
+function readShenShaVariants(input: JsonRecord): Partial<ShenShaVariantConfig> | undefined {
+  const value = input.shenShaVariants;
+  if (value === undefined) return undefined;
+  if (!isRecord(value)) {
+    throw new ApiError(400, 'BAD_REQUEST', 'shenShaVariants 必须是对象。');
+  }
+
+  const variants: Partial<ShenShaVariantConfig> = {};
+  const kongWangBasis = readOptionalEnum(value, 'kongWangBasis', SHENSHA_KONG_WANG_BASIS);
+  const yangRenMode = readOptionalEnum(value, 'yangRenMode', SHENSHA_YANG_REN_MODE);
+  const tongZiScope = readOptionalEnum(value, 'tongZiScope', SHENSHA_TONG_ZI_SCOPE);
+
+  if (kongWangBasis) variants.kongWangBasis = kongWangBasis;
+  if (yangRenMode) variants.yangRenMode = yangRenMode;
+  if (tongZiScope) variants.tongZiScope = tongZiScope;
+
+  return variants;
 }
 
 function buildBaziPrompt(input: JsonRecord) {
@@ -964,7 +1098,7 @@ function calculateDivinationData(method: Exclude<DivinationMethodId, 'random'>, 
     case 'xiaoliuren':
       return calculateXiaoliuren(input);
     case 'qimen':
-      return generateQimen(readCustomDate(input));
+      return calculateQimen(input);
     case 'liuren':
       return calculateLiuren(input);
     case 'tarot':
