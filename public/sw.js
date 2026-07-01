@@ -1,5 +1,5 @@
-const STATIC_CACHE = 'prompt-studio-static-v1';
-const RUNTIME_CACHE = 'prompt-studio-runtime-v1';
+const STATIC_CACHE = 'mingyu-static-v1';
+const RUNTIME_CACHE = 'mingyu-runtime-v1';
 const APP_SHELL = ['/', '/index.html', '/manifest.webmanifest', '/favicon.png', '/apple-touch-icon.png', '/pwa-192x192.png', '/pwa-512x512.png'];
 
 self.addEventListener('install', (event) => {

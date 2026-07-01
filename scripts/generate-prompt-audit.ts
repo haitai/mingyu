@@ -7,17 +7,17 @@ import {
   buildZiweiPromptForRuntime,
 } from '../src/lib/public-api/prompt-builders';
 import { buildDivinationPrompt } from '../src/lib/divination/engine';
-import { generateLiuyao } from '../src/lib/divination/algorithms/liuyao';
-import { generateMeihua } from '../src/lib/divination/algorithms/meihua';
-import { generateQimen } from '../src/lib/divination/algorithms/qimen';
-import { generateLiuren } from '../src/lib/divination/algorithms/liuren';
-import { generateXiaoliuren } from '../src/lib/divination/algorithms/xiaoliuren';
-import { generateAlmanacSelection } from '../src/lib/divination/algorithms/almanac';
-import { drawLenormandSpread } from '../src/lib/divination/algorithms/lenormand';
-import { generateAstrolabe } from '../src/lib/divination/algorithms/astrolabe';
+import { generateLiuyao } from 'mingyu-core/divination/liuyao';
+import { generateMeihua } from 'mingyu-core/divination/meihua';
+import { generateQimen } from 'mingyu-core/divination/qimen';
+import { generateLiuren } from 'mingyu-core/divination/liuren';
+import { generateXiaoliuren } from 'mingyu-core/divination/xiaoliuren';
+import { generateAlmanacSelection } from 'mingyu-core/divination/almanac';
+import { drawLenormandSpread } from 'mingyu-core/divination/lenormand';
+import { generateAstrolabe } from 'mingyu-core/divination/astrolabe';
 import { buildAstrolabeScopeContext } from '../src/lib/astrolabe-scope';
-import { drawRandomSign } from '../src/lib/divination/algorithms/ssgw';
-import { drawSpreadCards, getCardKeywords } from '../src/utils/tarot';
+import { drawRandomSign } from 'mingyu-core/divination/ssgw';
+import { drawSpreadCards, getCardKeywords } from 'mingyu-core/divination/tarot';
 import { baziCalculator } from '../src/utils/bazi/baziCalculator';
 import { buildFortuneSelectionContext } from '../src/utils/bazi/fortuneSelection';
 import {

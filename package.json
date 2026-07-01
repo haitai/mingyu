@@ -1,11 +1,11 @@
 {
-  "name": "prompt-studio",
+  "name": "mingyu",
   "private": true,
   "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "pnpm --filter mingyu-core build && vite build",
     "preview": "vite preview",
     "test": "tsx --tsconfig tsconfig.app.json --test \"tests/**/*.test.ts\"",
     "lint": "eslint src --max-warnings 999",

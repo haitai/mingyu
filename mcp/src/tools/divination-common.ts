@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { drawSingleCard, drawSpreadCards, getCardKeywords } from '../../../src/utils/tarot.js';
-import type { tarotSpreads } from '../../../src/utils/tarot.js';
+import { drawSingleCard, drawSpreadCards, getCardKeywords } from 'mingyu-core/divination/tarot';
+import type { tarotSpreads } from 'mingyu-core/divination/tarot';
 import { PROMPT_MODES } from '../../../src/lib/public-api/prompt-builders.js';
 import type { PromptMode } from '../../../src/lib/public-api/prompt-builders.js';
 import { buildDivinationPromptText } from './prompt-helpers.js';
