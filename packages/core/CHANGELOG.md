@@ -4,6 +4,7 @@
 
 ### 🚀 新增功能
 
+- **奇门支持年家/月家/日家/时家四级别** — `generateQimen(customDate?, method?, scope?` 新增 `scope: 'hour' | 'day' | 'month' | 'year'` 参数。默认 `'hour'` 保持向后兼容。时家/日家使用拆补法定局，月家使用月支循环定局，年家使用年干分组 + 三元甲子周期定局。
 - **`drawRandomSign(customDate?)`** — 灵签现在支持传入自定义时间参数，与其他占卜算法保持一致
 - **`configure({ timezoneOffset })`** — 新增统一全局配置入口，取代手动调用 `TimeManager.setTimezoneOffsetMinutesOverride()`
 

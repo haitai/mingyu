@@ -399,7 +399,18 @@ export interface QimenBranchPalace {
   name: string;
 }
 
+/**
+ * 奇门遁甲排盘级别
+ * - hour: 时家奇门（精确到时辰，默认）
+ * - day:  日家奇门（一日大势）
+ * - month: 月家奇门（一月运势）
+ * - year:  年家奇门（一年大势）
+ */
+export type QimenScope = 'hour' | 'day' | 'month' | 'year';
+
 export interface QimenData {
+  /** 排盘级别：hour=时家, day=日家, month=月家, year=年家 */
+  scope?: QimenScope;
   /** 九宫格完整数据（1-9宫） */
   jiuGongGe: QimenJiuGongGe[];
   /** 四柱干支（年/月/日/时） */

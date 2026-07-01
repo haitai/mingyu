@@ -353,8 +353,55 @@ export function getZhiFuZhiShi(hourGanZhi: string): {
   return { zhiFu, zhiShi, zhiFuPalace: xunShouPalace, specialConditions };
 }
 
+/**
+ * 通用寻值符与值使（旬首法）
+ *
+ * 与 getZhiFuZhiShi 的区别：不检查特殊时辰条件（六甲时/五不遇时等），
+ * 适用于任意干支（年柱、月柱、日柱、时柱均可）。
+ *
+ * 旬首法源出《奇门遁甲秘籍大全》：
+ *   由干支求旬首地支，旬首地支对应地盘宫位，
+ *   该宫之星为值符，该宫之门为值使。
+ *
+ * @param ganZhi 任意干支字符串（如 "甲子"、"乙丑"）
+ * @returns { zhiFu, zhiShi, xunShouPalace }
+ *    zhiFu         - 值符星名
+ *    zhiShi        - 值使门名
+ *    xunShouPalace - 旬首所在宫位编号
+ *
+ * @throws 当干支无法识别时
+ */
+export function getZhiFuZhiShiByGanZhi(ganZhi: string): {
+  zhiFu: string;
+  zhiShi: string;
+  xunShouPalace: number;
+} {
+  const gan = ganZhi.charAt(0);
+  const zhi = ganZhi.charAt(1);
+
+  const ganIndex = tenStems.indexOf(gan);
+  const zhiIndex = dizhi.indexOf(zhi);
+
+  if (ganIndex === -1 || zhiIndex === -1) {
+    throw new Error(`无法识别干支 "${ganZhi}"。`);
+  }
+
+  // 旬首地支序数 = (支序 - 干序 + 12) % 12
+  const xunShouZhiIndex = (zhiIndex - ganIndex + 12) % 12;
+  const xunShouZhi = dizhi[xunShouZhiIndex];
+
+  // 旬首地支对应地盘宫位
+  const xunShouPalace = diPanPalaces[xunShouZhi as keyof typeof diPanPalaces];
+
+  // 该宫之星 = 值符，该宫之门 = 值使
+  const zhiFu = palaceStars[xunShouPalace - 1];
+  const zhiShi = palaceDoorMap[xunShouPalace as keyof typeof palaceDoorMap];
+
+  return { zhiFu, zhiShi, xunShouPalace };
+}
+
 // ============================================================================
-// 4. 遁干（甲遁于六仪之下）
+// 5. 遁干（甲遁于六仪之下）
 // ============================================================================
 
 /**
