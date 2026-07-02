@@ -451,7 +451,7 @@ const CLASSIC_PATTERNS: ClassicPattern[] = [
       '四柱中有两子、两午，或子午各二。子午为坎离水火，子午双包主阴阳调和、水火既济。忌丑未破局。主人聪明智慧。',
     conditions: {
       dayStems: ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'],
-      otherConditions: ['地支有两子', '地支有两午', '子午各二'],
+      anyConditions: ['地支有两子', '地支有两午', '子午各二'],
     },
     favorableWuxing: ['水', '火'],
     unfavorableWuxing: ['土'],
